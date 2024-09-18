@@ -1,9 +1,3 @@
----
-tags:
-  - ml
-  - bachelor
-  - uni
----
 - ImageNet
 	- [paper](https://www.image-net.org/static_files/papers/imagenet_cvpr09.pdf)
 	- kinda standard benchmark
@@ -14,7 +8,7 @@ tags:
 	- around 22k categories
 	- 12 subtrees of categories
 
-	![[assets/imagenet.png]]
+	![](assets/imagenet.png)
 	- maybe we can just pick a subtree and train on it
 	- the dataset cares a lot about diverse data meaning different backgrounds, different positions of objects
 	- it has clean images
