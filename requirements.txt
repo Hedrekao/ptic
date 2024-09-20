@@ -1,0 +1,9 @@
+torch==2.4.1
+numpy
+pandas
+matplotlib
+tqdm
+wandb
+pyarrow
+huggingface_hub 
+torchvision
