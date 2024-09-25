@@ -49,14 +49,11 @@
 
 #### The system should allow for modular training of classifiers, so new hierarchies or categories can be added without retraining the entire model (?)
 
-## User cases
+## Use cases
 
 1. As a User, I want to be able to upload multiple images of a product or item (via folders or individual images) so that I can categorize the product with better accuracy.
 2. As a User, I want to be able to choose between semi-automatic or automatic modes, so I can have an option to manually choose the corect category from 3 most accured ones.
 3. As a User, I want to have (an option to see) feedback on classification confidence (e.g., a percentage) for each uploaded image, so that I can assess the certainty of the system’s predictions.
 4. As a User, I want to be able to batch upload a large dataset of product images from different categories, so that I can classify multiple products at once efficiently.
-
-#### some other ideas
-
-- As a User, I want to be able to view the classification history and performance over time (accuracy, penalties, confidence scores), so I can track how well the system is performing for my product categorization.
-- As a User, I want the system to notify me when a classification result has low confidence, so that I can review and upload more images to improve accuracy.
+5. As a User, I want to be able to view the classification history and performance over time (accuracy, penalties, confidence scores), so I can track how well the system is performing for my product categorization.
+6. As a User, I want the system to notify me when a classification result has low confidence, so that I can review and upload more images to improve accuracy.
