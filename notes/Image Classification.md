@@ -30,4 +30,5 @@ Also we could make it so that the more photos user uploads the more certain pred
 - B-CNN, CNN where after each convolution we predict one level of classification, loss is weighted using all outputs
 - CNN-RNN, where we use CNN for all the nodes in hierarchy and then use its output as input to RNN to get classification that is using relationship between levels
 - Binary CNN classifiers one per each level and we just follow the path with the most yes options to reach leaf node
+- CNN model for each that predicts one of the child of the node, and we just follow the path (similar to one above)
 
