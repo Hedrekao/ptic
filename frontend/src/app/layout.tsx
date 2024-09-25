@@ -14,8 +14,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`antialiased`}
+        className='antialiased bg-slate-100'
       >
+          <h1 className='text-3xl font-semibold tracking-tight my-12 w-full text-center'>Hierarchical image classification</h1>
         {children}
       </body>
     </html>
