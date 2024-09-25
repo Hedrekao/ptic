@@ -10,3 +10,24 @@ It looks on the benchmark that it outperforms, just normal classification into l
 To exploit a hierarchy, we could also do a custom loss function where cost of predicting node closer in a tree (like a parent) should _cost_ less than prediction completely foreign concept. Basically we would punish the model more the higher in tree the classifying mistake happened.
 
 Also we could make it so that the more photos user uploads the more certain prediction is, as we would do prediction per image and average the class, that way the result we would get would be more certain
+
+#### Semantic hierarchic classifier
+- binary detector
+  - they used not a nn but rather normal model and extracted the features from it (like the hue, gradient orientation etc)
+  - split image into patches using some detector and do extraction per patch
+  - create visual vocabulary by clustering subset of features from training set
+  - they create a hierarchy by starting at the leaf node and going up only through holonymy/meronymy links (is part of/is member of)
+  - starting from the root predict true or false for node and follow this path until u reach leaf node
+  - to reduce number of classifiers, they I guess clustered some nodes into common nodes (didn't really follow math on that -> we can achieve that too by pruning pointless nodes etc)
+
+#### Flat vs hierarchical classificatation
+- it is not said that flat classification will give worse result
+- when doing hierarchical classification, we have the opportunity to only retrain the models that perform worse than rest of models, meaning we can focus on specific classes that model has issue with (not possible in flat scenario)
+
+
+## Architecture approaches we should try out:
+- baseline CNN don't use hierarchy just leaf nodes
+- B-CNN, CNN where after each convolution we predict one level of classification, loss is weighted using all outputs
+- CNN-RNN, where we use CNN for all the nodes in hierarchy and then use its output as input to RNN to get classification that is using relationship between levels
+- Binary CNN classifiers one per each level and we just follow the path with the most yes options to reach leaf node
+
