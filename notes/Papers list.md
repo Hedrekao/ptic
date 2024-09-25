@@ -1,5 +1,0 @@
-- [M. Marszalek and C. Schmid. Semantic hierarchies for visual object recognition. In CVPR07, pages 1–7, 2007. ](https://inria.hal.science/inria-00548680/document)
-- [M. Marszalek and C. Schmid. Constructing category hierarchies for visual recognition. In ECCV08, pages IV: 479–491, 2008](https://inria.hal.science/inria-00548656/document)
-- [D. Nister and H. Stewenius. Scalable recognition with a vocabulary tree. In CVPR06, pages II: 2161–2168, 2006.](https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=b3e7d3e37e67af7f4546b46051063bea1b62dbae)
-- [A. Zweig and D. Weinshall. Exploiting object hierarchy: Combining models from different category levels. In ICCV07, pages 1–8, 2007.](https://www.cs.huji.ac.il/w~daphna/papers/ZweigICCV07.pdf)
-- [Kaggle articul about popular image classification architectures (ones that perform very well on the ImageNet dataset and broke the benchmark)](https://www.kaggle.com/discussions/getting-started/149448)
