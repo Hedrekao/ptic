@@ -20,8 +20,8 @@ const SettingsPage = () => {
 
   return (
     <Panel>
-      <h2 className="text-xl font-semibold mb-6">Settings</h2>
-      <div className="flex flex-col gap-4 mb-8">
+      <h2 className="text-xl font-semibold mb-4">Settings</h2>
+      <div className="flex flex-col gap-4 mb-4">
         <SettingOption
           value="automatic"
           isSelected={selectedMode === "automatic"}
