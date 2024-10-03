@@ -1,7 +1,7 @@
 package main
 
 import (
-	"backend/websocket-handler"
+	websockethandler "backend/websocket-handler"
 	"fmt"
 	"net/http"
 )

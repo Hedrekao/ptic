@@ -35,8 +35,14 @@
             document.getElementById('status').textContent = 'WebSocket error occurred!';
         };
 
-        function delay(time) {
-            return new Promise(resolve => setTimeout(resolve, time));
+        function arrayBufferToBase64(buffer) {
+            let binary = '';
+            const bytes = new Uint8Array(buffer);
+            const len = bytes.byteLength;
+            for (let i = 0; i < len; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);  // Encode binary string as Base64
         }
 
         document.getElementById('uploadForm').addEventListener('submit',async function (event) {
@@ -49,29 +55,44 @@
                 return;
             }
 
+            const init_msg = {
+                type: 'file_upload_init',
+                data: {
+                    numberOfFiles: files.length
+                }
+            }
+
+            socket.send(JSON.stringify(init_msg));
+
             // Send each file individually
             for (const file of files) {
                 console.log('Sending:', file.name)
                 // Send the filename first as a text message
-                socket.send(file.name);  // Send the filename first (as text)
+                // Now read the file data and send it as binary data
+                const reader = new FileReader();
+                
+                reader.onload = function (e) {
+                    const fileData = e.target.result;
 
-                // Wait for the server to acknowledge the filename
-                socket.onmessage = function(event) {
-                    if (event.data === "filename received") {  // Expect a server response to filename
-                        // Now read the file data and send it as binary data
-                        const reader = new FileReader();
-                        reader.onload = function (e) {
-                            const fileData = e.target.result;
-                            // Send binary data (file content)
-                            socket.send(fileData);
-                        };
-                        reader.readAsArrayBuffer(file);  // Read file as ArrayBuffer (binary)
+                    const base64Data = arrayBufferToBase64(fileData);
+
+                    const msg = {
+                        type: 'file_upload',
+                        data: {
+                            fileName: file.name,
+                            fileData: base64Data
+                        } 
                     }
+
+                    console.log(msg)
+
+                    // Send binary data (file content)
+                    socket.send(JSON.stringify(msg));
                 };
-                console.log('before delay')
-                await delay(1000)
-                console.log('after delay')
+
+                reader.readAsArrayBuffer(file);  // Read file as ArrayBuffer (binary)
             }
+            
         });
     </script>
 </body>

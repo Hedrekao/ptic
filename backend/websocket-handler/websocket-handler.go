@@ -1,11 +1,24 @@
 package websockethandler
 
 import (
-	"backend/file-handler"
+	inituploadhandler "backend/websocket-handler/init-upload-handler"
+	uploadhandler "backend/websocket-handler/upload-handler"
+	uploadprogressresponder "backend/websocket-responder/upload-progress-responder"
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/websocket"
+)
+
+// Define a custom type for the message type
+type MessageType string
+
+// Define constants for the allowed values
+const (
+	TypeUpload     MessageType = "file_upload"
+	TypeInitUpload MessageType = "init_upload"
 )
 
 var upgrader = websocket.Upgrader{
@@ -15,25 +28,81 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+type WebSocketMessage struct {
+	Type MessageType `json:"type"` // The message type (label)
+	Data interface{} `json:"data"` // The actual message data
+}
+
 // HandleWebSocketConnection upgrades the connection to WebSocket and handles file uploads
 func HandleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
-	// Upgrade the HTTP connection to a WebSocket connection
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		http.Error(w, "Could not upgrade to WebSocket", http.StatusInternalServerError)
+		log.Println("WebSocket upgrade error:", err)
 		return
 	}
 	defer conn.Close()
 
-	fmt.Println("New connection from:", conn.RemoteAddr())
+	fmt.Println("New WebSocket connection established")
 
-	// Handle the incoming file and save it
-	if err := filehandler.SaveFileFromWebSocket(conn); err != nil {
-		fmt.Println("Error handling file:", err)
-		conn.WriteMessage(websocket.TextMessage, []byte("Error: "+err.Error()))
-		return
+	for {
+		// Read incoming message
+		_, message, err := conn.ReadMessage()
+		if err != nil {
+			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
+				fmt.Println("WebSocket closed normally.")
+				return
+			}
+			log.Println("Error reading message:", err)
+			return
+		}
+
+		// Decode JSON message
+		var msg WebSocketMessage
+		if err := json.Unmarshal(message, &msg); err != nil {
+			log.Println("Error unmarshalling JSON:", err)
+			continue
+		}
+
+		fmt.Println("Received message type:", msg.Type)
+
+		switch {
+		case msg.Type == TypeInitUpload:
+			// Use a map to unmarshal data first
+			dataMap, ok := msg.Data.(map[string]interface{})
+
+			if !ok {
+				fmt.Println("Error: expected map for InitUploadData, but got a different type")
+				return
+			}
+
+			// Extract and convert the necessary fields
+			data := inituploadhandler.InitUploadData{
+				NumberOfFiles: dataMap["numberOfFiles"].(int),
+			}
+
+			inituploadhandler.HandleInitUpload(data)
+
+		case msg.Type == TypeUpload:
+			// Use a map to unmarshal data first
+			dataMap, ok := msg.Data.(map[string]interface{})
+			if !ok {
+				fmt.Println("Error: expected map for FileUploadData, but got a different type")
+				return
+			}
+
+			// Extract and convert the necessary fields
+			fileUploadData := uploadhandler.FileUploadData{
+				FileName: dataMap["fileName"].(string), // Assuming field is a string
+				FileData: dataMap["fileData"].(string), // Assuming field is a string (Base64)
+			}
+
+			if err := uploadhandler.HandleFileUpload(fileUploadData); err != nil {
+				log.Println("Error handling file upload:", err)
+			}
+
+			uploadprogressresponder.SendUploadProgress(conn)
+
+			fmt.Println("Received filename:", fileUploadData.FileName)
+		}
 	}
-
-	// Send a success message back to the client
-	conn.WriteMessage(websocket.TextMessage, []byte("File received successfully"))
 }
