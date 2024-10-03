@@ -1,21 +1,22 @@
-import React from "react";
+import React, { PropsWithChildren } from "react";
+import { Check } from "lucide-react";
 
-interface SettingOptionProps {
-  label: string;
-  description: string;
-  value: string;
-  selectedValue: string;
-  onChange: (value: string) => void;
+export type SettingOptionValue =
+  | "automatic"
+  | "semi-automatic"
+  | "semi-automatic-on-demand";
+interface SettingOptionProps extends PropsWithChildren {
+  value: SettingOptionValue;
+  isSelected: boolean;
+  onChange: (value: SettingOptionValue) => void;
 }
 
 export const SettingOption = ({
-  label,
-  description,
   value,
-  selectedValue,
+  isSelected,
   onChange,
+  children,
 }: SettingOptionProps) => {
-  const isSelected = selectedValue === value;
   return (
     <div
       className={`flex flex-col p-4 rounded-lg ${
@@ -32,14 +33,13 @@ export const SettingOption = ({
         />
         <div
           className={`w-5 h-5 rounded-full border-2 ${
-            isSelected ? "border-blue-500 bg-blue-500" : "border-gray-300"
+            isSelected ? "border-black bg-black" : "border-gray-300"
           } flex items-center justify-center`}
         >
-          {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
+          {isSelected && <Check size={16} className="text-white" />}
         </div>
-        {label}
+        <div>{children}</div>
       </label>
-      <p className="text-sm text-gray-500 mt-1">{description}</p>
     </div>
   );
 };
