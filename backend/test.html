@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Multiple File Upload</title>
+</head>
+<body>
+    <h1>WebSocket Multiple File Upload</h1>
+
+    <form id="uploadForm">
+        <input type="file" id="fileInput" multiple />  <!-- Allow multiple files -->
+        <button type="submit">Upload</button>
+    </form>
+
+    <div id="status"></div>
+
+    <script>
+        const socket = new WebSocket('ws://localhost:3000/ws');
+
+        socket.onopen = function () {
+            document.getElementById('status').textContent = 'WebSocket connection opened.';
+        };
+
+        socket.onmessage = function (event) {
+            document.getElementById('status').textContent = 'Server: ' + event.data;
+        };
+
+        socket.onclose = function () {
+            document.getElementById('status').textContent = 'WebSocket connection closed.';
+        };
+
+        socket.onerror = function (error) {
+            console.error("WebSocket error: ", error);
+            document.getElementById('status').textContent = 'WebSocket error occurred!';
+        };
+
+        function delay(time) {
+            return new Promise(resolve => setTimeout(resolve, time));
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit',async function (event) {
+            event.preventDefault();
+            const fileInput = document.getElementById('fileInput');
+            const files = fileInput.files;
+
+            if (files.length === 0) {
+                document.getElementById('status').textContent = 'No files selected!';
+                return;
+            }
+
+            // Send each file individually
+            for (const file of files) {
+                console.log('Sending:', file.name)
+                // Send the filename first as a text message
+                socket.send(file.name);  // Send the filename first (as text)
+
+                // Wait for the server to acknowledge the filename
+                socket.onmessage = function(event) {
+                    if (event.data === "filename received") {  // Expect a server response to filename
+                        // Now read the file data and send it as binary data
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            const fileData = e.target.result;
+                            // Send binary data (file content)
+                            socket.send(fileData);
+                        };
+                        reader.readAsArrayBuffer(file);  // Read file as ArrayBuffer (binary)
+                    }
+                };
+                console.log('before delay')
+                await delay(1000)
+                console.log('after delay')
+            }
+        });
+    </script>
+</body>
+</html>
