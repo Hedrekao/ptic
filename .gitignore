@@ -7,4 +7,5 @@ venv
 # Editor-based HTTP Client requests
 /httpRequests/
 
-**/images
+**/*images
+**/__pycache__
