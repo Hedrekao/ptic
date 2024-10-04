@@ -43,7 +43,7 @@ func scrapeImages(category string, maxImages int) {
 
 	// create a folder for the category
 	folderPath := path.Join(basePath, category)
-	timeout := 8 * time.Second
+	timeout := 10 * time.Second
 
 	if err := os.MkdirAll(folderPath, os.ModePerm); err != nil {
 		panic(err)
@@ -76,16 +76,22 @@ func scrapeImages(category string, maxImages int) {
 
 	// download the images
 
+	semaphore := make(chan struct{}, 20)
+
 	var downloadedImages int32
 	wg2 := sync.WaitGroup{}
-	for i, url := range urls {
+	for _, url := range urls {
 		wg2.Add(1)
-		go func(url string, i int) {
+		go func(url string) {
 			defer wg2.Done()
+			semaphore <- struct{}{}
+			defer func() {
+				<-semaphore
+			}()
 			ctx, cancel := context.WithTimeout(context.Background(), timeout)
 			defer cancel()
 			downloadImage(ctx, url, folderPath, &downloadedImages, maxImages)
-		}(url, i)
+		}(url)
 	}
 
 	wg2.Wait()
@@ -120,7 +126,6 @@ func downloadImage(ctx context.Context, url, folderPath string, downloadedImages
 	defer resp.Body.Close()
 
 	// create a file to save the image
-
 	photoId := atomic.AddInt32(downloadedImages, 1)
 
 	if photoId > int32(maxImages) {
