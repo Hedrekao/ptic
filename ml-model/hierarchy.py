@@ -5,6 +5,11 @@ class Hierarchy():
     def __init__(self, path: str):
         self.hierarchy: pd.DataFrame = pd.read_csv(path)
 
+    def get_root_id(self):
+        root_node = self.hierarchy[self.hierarchy["parent_id"].isnull()]
+
+        return root_node["id"].values[0]
+
     def get_children(self, parent_id: str):
 
         children = self.hierarchy[self.hierarchy["parent_id"] == parent_id]
