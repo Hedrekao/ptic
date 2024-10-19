@@ -7,6 +7,16 @@ from constants import RAW_IMAGES_PATH, PROCESSED_IMAGES_PATH
 from PIL import Image
 
 
+def RGBA2RGB(img: torch.Tensor) -> torch.Tensor:
+    if img.shape[0] == 4:
+        rgb = img[:3]
+        alpha = img[3]
+        bg = torch.ones_like(rgb) * (1 - alpha)
+        return rgb * alpha + bg
+
+    return img
+
+
 @click.command()
 @click.option("--min-size", "-m", "min_size_threshold", type=int)
 def preprocess_images(min_size_threshold: int):
@@ -24,6 +34,8 @@ def __preprocess_images(min_size: tuple, corrupted_files: set, file_below_min_si
     transform = v2.Compose([
         v2.ToImage(),
         v2.Resize(min_size),
+        v2.RGB(),
+        v2.Lambda(RGBA2RGB),
         v2.ToDtype(torch.float32, scale=True)
     ])
 
@@ -41,6 +53,9 @@ def __preprocess_images(min_size: tuple, corrupted_files: set, file_below_min_si
             save_path = os.path.join(base_save_path, img_name)
 
             tensor = transform(Image.open(raw_path))
+
+            assert tensor.shape == (
+                3, min_size[1], min_size[0]), f"All images should have the same shape. Got {tensor.shape}"
 
             torch.save(tensor, save_path)
 
