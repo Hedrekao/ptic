@@ -37,7 +37,7 @@ def get_images_statistics(min_size_threshold: int) -> dict:
                     RAW_IMAGES_PATH, class_name, img_name))
 
     return {
-        "min_size": min_size_threshold,
+        "min_size": min_size,
         "smallest_file": smallest_file,
         "corrupted_files": corrupted_files,
         "files_below_min_size": file_below_min_size,
