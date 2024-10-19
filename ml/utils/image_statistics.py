@@ -1,9 +1,7 @@
 import os
-
 import numpy as np
 from PIL import Image, UnidentifiedImageError
-
-from constants import RAW_IMAGES_PATH
+from .constants import RAW_IMAGES_PATH
 
 
 def get_images_statistics(min_size_threshold: int) -> dict:

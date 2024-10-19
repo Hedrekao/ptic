@@ -1,8 +1,12 @@
 import pandas as pd
+from typing import Optional
+from .constants import HIERARCHY_FILE_PATH
 
 
 class Hierarchy():
-    def __init__(self, path: str):
+    def __init__(self, path: Optional[str]):
+        if path is None:
+            path = HIERARCHY_FILE_PATH
         self.hierarchy: pd.DataFrame = pd.read_csv(path)
 
     def get_root_id(self):

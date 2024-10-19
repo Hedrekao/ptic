@@ -1,10 +1,11 @@
 import torch
 import os
+import random
+from .constants import PROCESSED_IMAGES_PATH
 from torch.utils.data import Dataset, DataLoader
 from typing import List, Tuple
 from queue import Queue
 from threading import Thread
-import random
 from glob import glob
 from torchvision.tv_tensors._image import Image
 
@@ -101,7 +102,6 @@ class PrefetchLoader:
 
 
 def create_images_dataloader(
-    root_dir: str,
     categories: List[str],
     batch_size: int = 32,
     split: str = 'train',
@@ -119,7 +119,8 @@ def create_images_dataloader(
         num_workers: Number of worker processes
         prefetch_factor: Number of batches to prefetch
     """
-    dataset = ImageDataset(root_dir, categories, split)
+
+    dataset = ImageDataset(PROCESSED_IMAGES_PATH, categories, split)
 
     # Create base DataLoader
     loader = DataLoader(

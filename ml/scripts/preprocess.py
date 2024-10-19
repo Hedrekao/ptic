@@ -2,8 +2,8 @@ import os
 import click
 import torch
 import torchvision.transforms.v2 as v2
-from image_statistics import get_images_statistics, print_statistics
-from constants import RAW_IMAGES_PATH, PROCESSED_IMAGES_PATH
+from ml.utils.image_statistics import get_images_statistics, print_statistics
+from ml.utils.constants import RAW_IMAGES_PATH, PROCESSED_IMAGES_PATH
 from PIL import Image
 
 
