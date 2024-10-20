@@ -4,7 +4,7 @@ from .constants import HIERARCHY_FILE_PATH
 
 
 class Hierarchy():
-    def __init__(self, path: Optional[str]):
+    def __init__(self, path: Optional[str] = None):
         if path is None:
             path = HIERARCHY_FILE_PATH
         self.hierarchy: pd.DataFrame = pd.read_csv(path)
