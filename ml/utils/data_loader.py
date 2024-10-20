@@ -1,19 +1,21 @@
-import torch
 import os
 import random
-from .constants import PROCESSED_IMAGES_PATH
-from torch.utils.data import Dataset, DataLoader
-from typing import List, Tuple
+from glob import glob
 from queue import Queue
 from threading import Thread
-from glob import glob
+from typing import Dict, List, Tuple
+
+import torch
+from torch.utils.data import DataLoader, Dataset
 from torchvision.tv_tensors._image import Image
+
+from .constants import PROCESSED_IMAGES_PATH
 
 torch.serialization.add_safe_globals([Image])
 
 
 class ImageDataset(Dataset):
-    def __init__(self, root_dir: str, categories: List[str], split: str = 'train',
+    def __init__(self, root_dir: str, categories: Dict[str, List[str]], split: str = 'train',
                  train_ratio: float = 0.70, val_ratio: float = 0.15):
 
         self.root_dir = os.path.normpath(root_dir)
@@ -21,37 +23,39 @@ class ImageDataset(Dataset):
         self.split = split
 
         # Create category to index mapping
-        self.cat_mapping = {cat: idx for idx, cat in enumerate(categories)}
+        self.cat_mapping = {cat: idx for idx,
+                            cat in enumerate(categories.keys())}
 
         # Collect all file paths and their categories
         self.samples = []
-        for cat in categories:
-            cat_dir = os.path.join(self.root_dir, cat)
-            tensor_files = glob(os.path.join(cat_dir, '*.pt'))
+        for cat, leaves in categories.items():
+            for leaf in leaves:
+                cat_dir = os.path.join(self.root_dir, leaf)
+                tensor_files = glob(os.path.join(cat_dir, '*.pt'))
 
-            # Generate deterministic train/val/test split
-            n_files = len(tensor_files)
-            indices = list(range(n_files))
+                # Generate deterministic train/val/test split
+                n_files = len(tensor_files)
+                indices = list(range(n_files))
 
-            # Seed random number generator for reproducibility
-            random.Random(42).shuffle(indices)
+                # Seed random number generator for reproducibility
+                random.Random(42).shuffle(indices)
 
-            n_train = int(n_files * train_ratio)
-            n_val = int(n_files * val_ratio)
+                n_train = int(n_files * train_ratio)
+                n_val = int(n_files * val_ratio)
 
-            if split == 'train':
-                selected_indices = indices[:n_train]
-            elif split == 'val':
-                selected_indices = indices[n_train:n_train + n_val]
-            else:  # test
-                selected_indices = indices[n_train + n_val:]
+                if split == 'train':
+                    selected_indices = indices[:n_train]
+                elif split == 'val':
+                    selected_indices = indices[n_train:n_train + n_val]
+                else:  # test
+                    selected_indices = indices[n_train + n_val:]
 
-            for idx in selected_indices:
-                self.samples.append({
-                    'path': tensor_files[idx],
-                    'category': cat,
-                    'label': self.cat_mapping[cat]
-                })
+                for idx in selected_indices:
+                    self.samples.append({
+                        'path': tensor_files[idx],
+                        'category': cat,
+                        'label': self.cat_mapping[cat]
+                    })
 
     def __len__(self) -> int:
         return len(self.samples)
@@ -102,7 +106,7 @@ class PrefetchLoader:
 
 
 def create_images_dataloader(
-    categories: List[str],
+    categories: Dict[str, List[str]],
     batch_size: int = 32,
     split: str = 'train',
     num_workers: int = 4,

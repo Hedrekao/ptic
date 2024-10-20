@@ -1,5 +1,5 @@
 import pandas as pd
-from typing import Optional
+from typing import List, Optional
 from .constants import HIERARCHY_FILE_PATH
 
 
@@ -20,7 +20,7 @@ class Hierarchy():
 
         return children["id"].tolist()
 
-    def get_leaf_nodes(self, root_id: str):
+    def get_leaf_nodes(self, root_id: str) -> List[str]:
         """
         Recursively get all leaf nodes ids under a given root node
         """
