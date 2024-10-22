@@ -1,10 +1,13 @@
-import React from 'react'
+import React, {PropsWithChildren} from 'react'
 import {Panel} from "app/components/panel/panel";
 import {UploadArea} from "./_components/upload-area";
 import {Button, buttonVariants} from "app/components/ui/button";
 import {ChevronRight} from "lucide-react";
 import Link from "next/link";
 
+interface P extends PropsWithChildren {
+
+}
 export const Page = () => {
     return (
         <Panel>

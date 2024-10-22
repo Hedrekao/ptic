@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Multiple File Upload</title>
+</head>
+<body>
+    <h1>WebSocket Multiple File Upload</h1>
+
+    <form id="uploadForm">
+        <input type="file" id="fileInput" multiple />  <!-- Allow multiple files -->
+        <button type="submit">Upload</button>
+    </form>
+
+    <div id="status"></div>
+
+    <script>
+        const socket = new WebSocket('ws://localhost:3000/ws');
+
+        socket.onopen = function () {
+            document.getElementById('status').textContent = 'WebSocket connection opened.';
+        };
+
+        socket.onmessage = function (event) {
+            document.getElementById('status').textContent = 'Server: ' + event.data;
+        };
+
+        socket.onclose = function () {
+            document.getElementById('status').textContent = 'WebSocket connection closed.';
+        };
+
+        socket.onerror = function (error) {
+            console.error("WebSocket error: ", error);
+            document.getElementById('status').textContent = 'WebSocket error occurred!';
+        };
+
+        function arrayBufferToBase64(buffer) {
+            let binary = '';
+            const bytes = new Uint8Array(buffer);
+            const len = bytes.byteLength;
+            for (let i = 0; i < len; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);  // Encode binary string as Base64
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit',async function (event) {
+            event.preventDefault();
+            const fileInput = document.getElementById('fileInput');
+            const files = fileInput.files;
+
+            if (files.length === 0) {
+                document.getElementById('status').textContent = 'No files selected!';
+                return;
+            }
+
+            const init_msg = {
+                type: 'file_upload_init',
+                data: {
+                    numberOfFiles: files.length
+                }
+            }
+
+            socket.send(JSON.stringify(init_msg));
+
+            // Send each file individually
+            for (const file of files) {
+                console.log('Sending:', file.name)
+                // Send the filename first as a text message
+                // Now read the file data and send it as binary data
+                const reader = new FileReader();
+                
+                reader.onload = function (e) {
+                    const fileData = e.target.result;
+
+                    const base64Data = arrayBufferToBase64(fileData);
+
+                    const msg = {
+                        type: 'file_upload',
+                        data: {
+                            fileName: file.name,
+                            fileData: base64Data
+                        } 
+                    }
+
+                    console.log(msg)
+
+                    // Send binary data (file content)
+                    socket.send(JSON.stringify(msg));
+                };
+
+                reader.readAsArrayBuffer(file);  // Read file as ArrayBuffer (binary)
+            }
+            
+        });
+    </script>
+</body>
+</html>
