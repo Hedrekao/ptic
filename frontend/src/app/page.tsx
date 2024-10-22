@@ -1,8 +1,7 @@
-import {redirect} from "next/navigation";
-
+import {ShallowRouter} from "app/components/shallow-router/shallow-router";
 
 export default function Home() {
-    redirect('/upload')
-
-  return null
+  return (
+    <ShallowRouter/>
+  )
 }
