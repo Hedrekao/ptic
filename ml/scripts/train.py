@@ -5,11 +5,10 @@ import torch
 import torch.nn as nn
 import wandb
 from torch.utils.data import DataLoader
-from torch.cuda.amp import GradScaler, autocast
 from tqdm.auto import tqdm
 
 from ml.models.HierarchyNodeModel import HierarchyNodeModel
-from ml.utils.data_loader import create_images_dataloader
+from ml.utils.data_loader import PrefetchLoader, create_images_dataloader
 from ml.utils.hierarchy import Hierarchy
 
 
@@ -58,68 +57,65 @@ def __create_optimizer(model: nn.Module, train_config: TrainConfig) -> torch.opt
 
 
 def __train_epoch(model: nn.Module,
-                  train_loader: DataLoader,
+                  loader: PrefetchLoader,
                   loss_fn: nn.Module,
-                  optimizer: torch.optim.Optimizer,
-                  scaler: GradScaler,
-                  device: str) -> Tuple[float, float]:
+                  optimizer: torch.optim.Optimizer
+                  ) -> Tuple[float, float]:
+
     model.train()
     total_loss = 0
     acc = 0
-    progress_bar = tqdm(train_loader, desc='Training')
+    progress_bar = tqdm(loader, desc='Training')
 
     for X_batch, y_batch in progress_bar:
-        X_batch, y_batch = X_batch.to(device), y_batch.to(device)
+        optimizer.zero_grad()
 
-        # TODO: comment multiprecision training to explain what it does
-        with autocast(device):
-            y_pred = model(X_batch)
-            loss = loss_fn(y_pred, y_batch)
+        y_pred = model(X_batch)
+        loss = loss_fn(y_pred, y_batch)
 
         total_loss += loss.item()
+
         acc += (y_pred.argmax(dim=1) == y_batch).sum().item()
 
-        scaler.scale(loss).backward()
+        loss.backward()
+
+        optimizer.step()
 
         # gradient clipping for stability
         # TODO: might be an overkill, might be removed
-        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-
-        scaler.step(optimizer)
-        scaler.update()
+        # torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
 
         # TODO: might also in future put lr
         progress_bar.set_postfix(loss=loss.item())
 
-    acc /= len(train_loader)
-    total_loss /= len(train_loader)
+    acc /= len(loader) * loader.loader.batch_size
+    total_loss /= len(loader)
 
     return total_loss, acc
 
 
 @torch.no_grad()
-def __validate(model: nn.Module, val_loader: DataLoader, loss_fn: nn.Module, device: str) -> Tuple[float, float]:
+def __validate(model: nn.Module, loader: PrefetchLoader, loss_fn: nn.Module) -> Tuple[float, float]:
     model.eval()
-    val_acc = 0
-    val_loss = 0
+    acc = 0
+    total_loss = 0
 
-    progress_bar = tqdm(val_loader, desc='Validation')
+    progress_bar = tqdm(loader, desc='Validation')
     for X_batch, y_batch in progress_bar:
-        X_batch, y_batch = X_batch.to(device), y_batch.to(device)
 
         y_pred = model(X_batch)
         loss = loss_fn(y_pred, y_batch)
 
-        val_loss += loss.item()
-        val_acc += (y_pred.argmax(dim=1) == y_batch).sum().item()
+        total_loss += loss.item()
+        acc += (y_pred.argmax(dim=1) == y_batch).sum().item()
 
         # TODO: might also in future put lr
         progress_bar.set_postfix(loss=loss.item())
 
-    val_acc /= len(val_loader)
-    val_loss /= len(val_loader)
+    acc /= len(loader) * loader.loader.batch_size
+    total_loss /= len(loader)
 
-    return val_loss, val_acc
+    return total_loss, acc
 
 
 def train_singular_model(hierarchy: Hierarchy, node_id: str, train_config: TrainConfig, device: str) -> None:
@@ -135,22 +131,20 @@ def train_singular_model(hierarchy: Hierarchy, node_id: str, train_config: Train
 
     optimizer = __create_optimizer(model, train_config)
 
-    scaler = GradScaler(device)
-
     # TODO: we might add a learning rate scheduler like OneCycleLR to have warmup and cooldown periods
 
-    wandb.init(
-        project="bachelor-resnet-icaam",
-        # track hyperparameters and run metadata
-        # TODO: might be more hyperparameters
-        config={
-            "learning_rate": train_config.learning_rate,
-            "epochs": train_config.epochs,
-            "batch_size": train_config.batch_size,
-            "optimizer": train_config.optimizer,
-            "weight_decay": train_config.weight_decay
-        }
-    )
+    # wandb.init(
+    #     project="bachelor-resnet-icaam",
+    #     # track hyperparameters and run metadata
+    #     # TODO: might be more hyperparameters
+    #     config={
+    #         "learning_rate": train_config.learning_rate,
+    #         "epochs": train_config.epochs,
+    #         "batch_size": train_config.batch_size,
+    #         "optimizer": train_config.optimizer,
+    #         "weight_decay": train_config.weight_decay
+    #     }
+    # )
 
     best_val_loss = float('inf')
     patience = 0
@@ -159,21 +153,19 @@ def train_singular_model(hierarchy: Hierarchy, node_id: str, train_config: Train
         print(f'Epoch {epoch}/{train_config.epochs}')
 
         train_loss, acc = __train_epoch(
-            model, train_loader, loss_fn, optimizer, scaler, device)
+            model, train_loader, loss_fn, optimizer)
 
-        wandb.log({"train_loss": train_loss,
-                  "train_accuracy": acc, "epoch": epoch})
+        # wandb.log({"train_loss": train_loss,
+        #           "train_accuracy": acc, "epoch": epoch})
 
-        print(f'Epoch {epoch}, train_loss: {train_loss}, train_accuracy {acc}')
-
-        val_loss, val_acc = __validate(model, val_loader, loss_fn, device)
+        val_loss, val_acc = __validate(model, val_loader, loss_fn)
 
         # TODO: maybe we can log more metrics like lr, precision, recall, f1-score
         # TODO: maybe we can log all metrics at once
-        wandb.log({"val_loss": val_loss, "val_accuracy": val_acc, "epoch": epoch})
+        # wandb.log({"val_loss": val_loss, "val_accuracy": val_acc, "epoch": epoch})
 
         print(
-            f'Epoch {epoch}, val_loss: {val_loss}, val_accuracy {val_acc}')
+            f'Train_loss: {train_loss}, train_accuracy {acc}, val_loss: {val_loss}, val_accuracy: {val_acc}')
 
         # TODO: all the early stopping params should be in a config
         if val_loss < best_val_loss:
