@@ -7,8 +7,6 @@ type InitUploadData struct {
 var FilesUploaded = 0
 var TotalFilesToBeUploaded = 0
 
-func HandleInitUpload(Data InitUploadData) error {
+func HandleInitUpload(Data InitUploadData) {
 	TotalFilesToBeUploaded = Data.NumberOfFiles
-
-	return nil
 }
