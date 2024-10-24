@@ -8,6 +8,7 @@ from typing import Dict, List, Tuple
 import torch
 from torch.utils.data import DataLoader, Dataset
 from torchvision.tv_tensors._image import Image
+from torchvision.transforms import v2
 
 from .constants import PROCESSED_IMAGES_PATH
 
@@ -25,6 +26,27 @@ class ImageDataset(Dataset):
         # Create category to index mapping
         self.cat_mapping = {cat: idx for idx,
                             cat in enumerate(categories.keys())}
+
+        self.train_augmentations = v2.Compose([
+            v2.RandomApply(
+                [v2.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1)], p=0.3),
+            v2.RandomApply(
+                [v2.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 2.0))], p=0.3),
+            v2.RandomApply(
+                [v2.RandomAdjustSharpness(sharpness_factor=2)], p=0.3),
+            v2.RandomApply([v2.RandomErasing(scale=(0.02, 0.15))], p=0.3)
+        ])
+
+        self.rebalancing_augmentations = [
+            'flip_h',         # Horizontal flip
+            'flip_v',         # Vertical flip
+            'rot90',          # 90 degree rotation
+            'rot180',         # 180 degree rotation
+            'rot270',         # 270 degree rotation
+            'flip_h_rot90',   # Combine flip and rotation
+            'flip_v_rot90',   # Another combination
+            'identity'        # No change
+        ]
 
         # Collect all file paths and their categories
         self.samples = []
@@ -96,18 +118,30 @@ class ImageDataset(Dataset):
                 sample = random.choice(cat_samples)
                 # Create a random transformation
                 tensor = torch.load(sample['path'], weights_only=True)
+
                 transformation_type = random.choice(
-                    ['flip', 'rotate', 'identity'])
-                if transformation_type == 'flip':
+                    self.rebalancing_augmentations)
+                if transformation_type == 'flip_h':
                     transformed_tensor = torch.flip(
-                        tensor, [1])  # Flip horizontally
-                elif transformation_type == 'rotate':
-                    # Rotate by 90, 180, or 270 degrees
-                    angle = random.choice([90, 180, 270])
+                        tensor, [2])  # Horizontal flip
+                elif transformation_type == 'flip_v':
+                    transformed_tensor = torch.flip(
+                        tensor, [1])  # Vertical flip
+                elif transformation_type == 'rot90':
+                    transformed_tensor = torch.rot90(tensor, k=1, dims=(1, 2))
+                elif transformation_type == 'rot180':
+                    transformed_tensor = torch.rot90(tensor, k=2, dims=(1, 2))
+                elif transformation_type == 'rot270':
+                    transformed_tensor = torch.rot90(tensor, k=3, dims=(1, 2))
+                elif transformation_type == 'flip_h_rot90':
                     transformed_tensor = torch.rot90(
-                        tensor, k=angle//90, dims=(1, 2))
+                        torch.flip(tensor, [2]), k=1, dims=(1, 2))
+                elif transformation_type == 'flip_v_rot90':
+                    transformed_tensor = torch.rot90(
+                        torch.flip(tensor, [1]), k=1, dims=(1, 2))
                 else:  # identity
                     transformed_tensor = tensor
+
                 # Save the transformed tensor to a temporary path
                 tmp_path = os.path.join(
                     tmp_dir, f'{n_samples_cat}_{cat}.pt')
@@ -134,6 +168,14 @@ class ImageDataset(Dataset):
         sample = self.samples[idx]
         # Load preprocessed tensor
         tensor = torch.load(sample['path'], weights_only=True)
+
+        if self.split == 'train':
+            old_shape = tensor.shape
+            tensor = self.train_augmentations(tensor)
+
+            assert tensor.shape == old_shape, \
+                f"Augmented tensor shape {tensor.shape} does not match original tensor shape {old_shape}"
+
         return tensor, torch.tensor(sample['label'], dtype=torch.long)
 
 
