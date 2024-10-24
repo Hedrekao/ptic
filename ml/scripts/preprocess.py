@@ -30,13 +30,16 @@ def preprocess_images(min_size_threshold: int):
 
 def __preprocess_images(min_size: tuple, corrupted_files: set, file_below_min_size: set):
 
-    # TODO: do small research about normalization of values in tensor instead of just [0,1]
     transform = v2.Compose([
         v2.ToImage(),
         v2.Resize(min_size),
         v2.RGB(),
         v2.Lambda(RGBA2RGB),
-        v2.ToDtype(torch.float32, scale=True)
+        v2.ToDtype(torch.float32, scale=True),
+        v2.Normalize(
+            mean=[0.4529, 0.4129, 0.3755],
+            std=[0.2829, 0.2726, 0.2763]
+        )
     ])
 
     for class_name in os.listdir(RAW_IMAGES_PATH):
