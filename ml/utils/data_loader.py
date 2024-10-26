@@ -28,13 +28,29 @@ class ImageDataset(Dataset):
                             cat in enumerate(categories.keys())}
 
         self.train_augmentations = v2.Compose([
-            v2.RandomApply(
-                [v2.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1)], p=0.3),
-            v2.RandomApply(
-                [v2.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 2.0))], p=0.3),
-            v2.RandomApply(
-                [v2.RandomAdjustSharpness(sharpness_factor=2)], p=0.3),
-            v2.RandomApply([v2.RandomErasing(scale=(0.02, 0.15))], p=0.3)
+            v2.RandomApply([
+                v2.ColorJitter(
+                    brightness=0.3,
+                    contrast=0.3,
+                    saturation=0.3,
+                    hue=0.15
+                )
+            ], p=0.5),
+            v2.RandomApply([
+                v2.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 2.0))
+            ], p=0.4),
+            v2.RandomApply([
+                v2.RandomAdjustSharpness(sharpness_factor=2)
+            ], p=0.4),
+            v2.RandomErasing(p=0.5, scale=(0.02, 0.2), ratio=(0.3, 3.3)),
+            v2.RandomApply([
+                v2.RandomPerspective(distortion_scale=0.3)
+            ], p=0.3),
+            v2.RandomApply([
+                v2.RandomRotation(degrees=15)
+            ], p=0.3),
+            v2.RandomHorizontalFlip(p=0.5),
+            v2.RandomAutocontrast(p=0.3),
         ])
 
         self.rebalancing_augmentations = [

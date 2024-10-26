@@ -9,3 +9,6 @@ venv
 
 **/*images
 **/__pycache__
+**.pth
+/ml/logs
+wandb
