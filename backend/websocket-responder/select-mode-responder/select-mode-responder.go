@@ -1,20 +1,18 @@
 package selectmoderesponder
 
 import (
-	selectmodehandler "backend/websocket-handler/select-mode-handler"
+	"backend/websocket-handler/types"
 	websocketresponder "backend/websocket-responder"
 	"fmt"
-
-	"github.com/gorilla/websocket"
 )
 
-func SendModeSelected(conn *websocket.Conn) error {
+func SendModeSelected(ctx *types.ConnectionContext) error {
 	response := map[string]string{
-		"mode": string(selectmodehandler.ModeSelected),
+		"mode": string(ctx.SelectedMode),
 	}
 
 	fmt.Println("Sending mode selected: ", response)
-	websocketresponder.SendWebSocketResponse(conn, websocketresponder.WebSocketResponse{Type: "mode_selected", Data: response})
+	websocketresponder.SendWebSocketResponse(ctx.Conn, websocketresponder.WebSocketResponse{Type: "mode_selected", Data: response})
 
 	return nil
 }

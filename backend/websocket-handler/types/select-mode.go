@@ -1,4 +1,4 @@
-package selectmodehandler
+package types
 
 type EMode string
 
@@ -10,10 +10,4 @@ const (
 
 type SelectModeData struct {
 	Mode EMode `json:"mode"`
-}
-
-var ModeSelected = Automatic
-
-func HandleSelectMode(Data SelectModeData) {
-	ModeSelected = Data.Mode
 }

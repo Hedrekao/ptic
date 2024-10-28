@@ -1,11 +1,7 @@
 package websockethandler
 
 import (
-	inituploadhandler "backend/websocket-handler/init-upload-handler"
-	selectmodehandler "backend/websocket-handler/select-mode-handler"
-	uploadhandler "backend/websocket-handler/upload-handler"
-	selectmoderesponder "backend/websocket-responder/select-mode-responder"
-	uploadprogressresponder "backend/websocket-responder/upload-progress-responder"
+	types "backend/websocket-handler/types"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -33,21 +29,33 @@ type WebSocketMessage struct {
 	Data interface{} `json:"data"`
 }
 
+// HandleWebSocketConnection initializes a context and goroutine for each connection
 func HandleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("WebSocket upgrade error:", err)
 		return
 	}
-	defer conn.Close()
 
-	fmt.Println("New WebSocket connection established")
+	// Create and pass context for this connection
+	ctx := &types.ConnectionContext{
+		Conn: conn,
+		Id:   r.RemoteAddr, // Use RemoteAddr for ID, or generate a unique one
+	}
+
+	fmt.Println("New WebSocket connection established:", ctx.Id)
+	go handleConnection(ctx)
+}
+
+// handleConnection manages each connection with its context
+func handleConnection(ctx *types.ConnectionContext) {
+	defer ctx.Conn.Close()
 
 	for {
-		_, message, err := conn.ReadMessage()
+		_, message, err := ctx.Conn.ReadMessage()
 		if err != nil {
 			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
-				fmt.Println("WebSocket closed normally.")
+				fmt.Println("WebSocket closed normally:", ctx.Id)
 				return
 			}
 			log.Println("Error reading message:", err)
@@ -64,62 +72,11 @@ func HandleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 
 		switch {
 		case msg.Type == TypeInitUpload:
-			dataMap, ok := msg.Data.(map[string]interface{})
-
-			if !ok {
-				fmt.Println("Error: expected map for InitUploadData, but got a different type")
-				return
-			}
-
-			numberOfFiles, ok := dataMap["numberOfFiles"].(float64)
-
-			if !ok {
-				fmt.Println("Error: numberOfFiles is not a float64")
-				return
-			}
-
-			data := inituploadhandler.InitUploadData{
-				NumberOfFiles: int(numberOfFiles), // Cast float64 to int
-			}
-
-			inituploadhandler.HandleInitUpload(data)
-
+			handleInitUpload(ctx, msg.Data)
 		case msg.Type == TypeUpload:
-			dataMap, ok := msg.Data.(map[string]interface{})
-			if !ok {
-				fmt.Println("Error: expected map for FileUploadData, but got a different type")
-				return
-			}
-
-			fileUploadData := uploadhandler.FileUploadData{
-				FileName: dataMap["fileName"].(string),
-				FileData: dataMap["fileData"].(string), // Assuming field is a string (Base64)
-			}
-
-			if err := uploadhandler.HandleFileUpload(fileUploadData); err != nil {
-				log.Println("Error handling file upload:", err)
-			}
-
-			log.Println("File uploaded:", fileUploadData.FileName)
-
-			uploadprogressresponder.SendUploadProgress(conn)
-
-			fmt.Println("Received filename:", fileUploadData.FileName)
-
+			handleFileUpload(ctx, msg.Data)
 		case msg.Type == TypeSelectMode:
-			dataMap, ok := msg.Data.(map[string]interface{})
-			if !ok {
-				fmt.Println("Error: expected map for SelectMode, but got a different type")
-				return
-			}
-
-			modeSelectData := selectmodehandler.SelectModeData{
-				Mode: dataMap["mode"].(selectmodehandler.EMode),
-			}
-
-			selectmodehandler.HandleSelectMode(modeSelectData)
-
-			selectmoderesponder.SendModeSelected(conn)
+			handleSelectMode(ctx, msg.Data)
 		}
 	}
 }
