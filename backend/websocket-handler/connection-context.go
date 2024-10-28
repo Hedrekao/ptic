@@ -42,7 +42,10 @@ func handleFileUpload(ctx *types.ConnectionContext, data interface{}) {
 	}
 
 	log.Println("File uploaded:", fileUploadData.FileName)
+
 	ctx.FilesUploaded++
+	ctx.FilesToPredict = append(ctx.FilesToPredict, fileUploadData.FileName)
+
 	uploadprogressresponder.SendUploadProgress(ctx)
 	fmt.Println("Received filename:", fileUploadData.FileName)
 }
@@ -62,4 +65,8 @@ func handleSelectMode(ctx *types.ConnectionContext, data interface{}) {
 
 	selectmoderesponder.SendModeSelected(ctx)
 	fmt.Println("Mode selected for connection:", ctx.Id)
+}
+
+func handleInitPredictions(ctx *types.ConnectionContext) {
+
 }
