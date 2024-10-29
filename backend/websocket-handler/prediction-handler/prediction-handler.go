@@ -3,34 +3,47 @@ package predictionhandler
 import (
 	"backend/model"
 	"backend/websocket-handler/types"
+	websocketresponder "backend/websocket-responder"
+	"fmt"
 )
 
-func HandlePrediction(ctx *types.ConnectionContext) error {
-	// Predict the files
+func HandlePrediction(ctx *types.ConnectionContext) {
 	for _, file := range ctx.FilesToPredict {
-		err := predictFile(file, ctx)
+		prediction, err := model.Predict(file, ctx)
 		if err != nil {
-			return err
+			fmt.Println("Error predicting file:", err)
 		}
-		// TODO: continue here
-	}
 
-	return nil
+		switch ctx.SelectedMode {
+		case types.Automatic:
+			mostProbableClass := prediction.PredictedClasses[0].Class
+			ctx.ApprovedFiles = append(ctx.ApprovedFiles, types.ApprovedFile{FilePath: prediction.FilePath, Class: mostProbableClass})
+
+		case types.Manual:
+			ctx.PredictionFiles = append(ctx.PredictionFiles, prediction)
+			websocketresponder.SendPredictionApprovalRequest(ctx)
+
+		case types.SemiAutomatic:
+			mostProbableClassWeight := prediction.PredictedClasses[0].Weight
+			if mostProbableClassWeight > 0.8 {
+				mostProbableClass := prediction.PredictedClasses[0].Class
+				ctx.ApprovedFiles = append(ctx.ApprovedFiles, types.ApprovedFile{FilePath: prediction.FilePath, Class: mostProbableClass})
+			} else {
+				ctx.PredictionFiles = append(ctx.PredictionFiles, prediction)
+				websocketresponder.SendPredictionApprovalRequest(ctx)
+			}
+		}
+	}
 }
 
-func predictFile(filePath string, ctx *types.ConnectionContext) error {
-	prediction, err := model.Predict(filePath, ctx)
-	if err != nil {
-		return err
+func HandlePredictionApproval(ctx *types.ConnectionContext, data types.PredictionApprovalData) {
+	approvedFile := types.ApprovedFile{
+		FilePath: data.FilePath,
+		Class:    data.Class,
 	}
 
-	switch ctx.SelectedMode {
-	case types.ModeClassification:
-	}
+	ctx.ApprovedFiles = append(ctx.ApprovedFiles, approvedFile)
 
-	ctx.SelectedMode
-
-	ctx.PredictionFiles = append(ctx.PredictionFiles, prediction)
-
-	return nil
+	websocketresponder.SendPredictionProgress(ctx)
+	websocketresponder.SendPredictionApprovalRequest(ctx)
 }

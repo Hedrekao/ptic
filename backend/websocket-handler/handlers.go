@@ -1,10 +1,11 @@
 package websockethandler
 
 import (
+	predictionhandler "backend/websocket-handler/prediction-handler"
 	types "backend/websocket-handler/types"
 	uploadhandler "backend/websocket-handler/upload-handler"
-	selectmoderesponder "backend/websocket-responder/select-mode-responder"
-	uploadprogressresponder "backend/websocket-responder/upload-progress-responder"
+	websocketresponder "backend/websocket-responder"
+
 	"fmt"
 	"log"
 )
@@ -46,7 +47,7 @@ func handleFileUpload(ctx *types.ConnectionContext, data interface{}) {
 	ctx.FilesUploaded++
 	ctx.FilesToPredict = append(ctx.FilesToPredict, fileUploadData.FileName)
 
-	uploadprogressresponder.SendUploadProgress(ctx)
+	websocketresponder.SendUploadProgress(ctx)
 	fmt.Println("Received filename:", fileUploadData.FileName)
 }
 
@@ -63,10 +64,25 @@ func handleSelectMode(ctx *types.ConnectionContext, data interface{}) {
 
 	ctx.SelectedMode = modeSelectData.Mode
 
-	selectmoderesponder.SendModeSelected(ctx)
+	websocketresponder.SendModeSelected(ctx)
 	fmt.Println("Mode selected for connection:", ctx.Id)
 }
 
 func handleInitPredictions(ctx *types.ConnectionContext) {
+	predictionhandler.HandlePrediction(ctx)
+}
 
+func handlePredictionApproval(ctx *types.ConnectionContext, data interface{}) {
+	dataMap, ok := data.(map[string]interface{})
+	if !ok {
+		fmt.Println("Error: expected map for PredictionApprovalData, but got a different type")
+		return
+	}
+
+	predictionApprovalData := types.PredictionApprovalData{
+		FilePath: dataMap["filePath"].(string),
+		Class:    dataMap["class"].(string),
+	}
+
+	predictionhandler.HandlePredictionApproval(ctx, predictionApprovalData)
 }

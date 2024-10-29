@@ -9,8 +9,9 @@ type ConnectionContext struct {
 	FilesUploaded          int
 	TotalFilesToBeUploaded int
 	FilesToPredict         []string
-	ApprovedFiles          []ApprovedFile
-	PredictionFiles        []PredictionFile
+	ApprovedFiles          []ApprovedFile   // Files with final prediction, either approved or automaically predicted
+	PredictionFiles        []PredictionFile // Files to be approved manually
+	IsAwaitingApproval     bool
 }
 
 type ApprovedFile struct {

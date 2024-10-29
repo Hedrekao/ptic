@@ -30,7 +30,6 @@ type WebSocketMessage struct {
 	Data interface{} `json:"data"`
 }
 
-// HandleWebSocketConnection initializes a context and goroutine for each connection
 func HandleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -38,7 +37,6 @@ func HandleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create and pass context for this connection
 	ctx := &types.ConnectionContext{
 		Conn: conn,
 		Id:   r.RemoteAddr, // Use RemoteAddr for ID, or generate a unique one
@@ -48,7 +46,6 @@ func HandleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 	go handleConnection(ctx)
 }
 
-// handleConnection manages each connection with its context
 func handleConnection(ctx *types.ConnectionContext) {
 	defer ctx.Conn.Close()
 
@@ -79,7 +76,7 @@ func handleConnection(ctx *types.ConnectionContext) {
 		case msg.Type == TypeSelectMode:
 			handleSelectMode(ctx, msg.Data)
 		case msg.Type == TypeInitPredictions:
-			handleInitPredictions(ctx, msg.Data)
+			handleInitPredictions(ctx)
 		}
 	}
 }
