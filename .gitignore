@@ -12,3 +12,8 @@ venv
 **.pth
 /ml/logs
 wandb
+
+
+# Mac crap
+**/.idea/
+**/.DS_Store

@@ -11,11 +11,11 @@ app = FastAPI()
 
 
 class ImageRequest(BaseModel):
-    image: str  # Base64 encoded image
+    filePath: str  # Location of image file
 
 
 class BatchImageRequest(BaseModel):
-    images: List[str]  # List of base64 encoded images
+    filePaths: List[str]  # Location of image files
     batch_size: Optional[int] = Field(default=16, gt=0, le=64)
 
 
@@ -78,8 +78,9 @@ async def predict(request: ImageRequest) -> PredictionResponse:
     """
     start_time = time.time()
 
-    # Convert base64 to PIL Image
-    image = base64_to_pil(request.image)
+
+    # Get image from file system
+    image = Image.open(request.filePath)
 
     # TODO: Preprocess image
 
@@ -109,8 +110,8 @@ def batch_predict(request: BatchImageRequest) -> BatchPredictionResponse:
 
     """
 
-    # Convert base64 to PIL Image
-    images = [base64_to_pil(image_data) for image_data in request.images]
+    # Get images from file system
+    images = [Image.open(filePath) for filePath in request.filePaths]
 
     # Simulate some processing time (100-300ms)
 

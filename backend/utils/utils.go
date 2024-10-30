@@ -1,6 +1,8 @@
 package utils
 
-import "os"
+import (
+	"os"
+)
 
 // EnsureDirExists creates the directory if it does not exist
 func EnsureDirExists(dir string) error {

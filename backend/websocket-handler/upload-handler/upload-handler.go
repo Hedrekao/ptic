@@ -2,21 +2,16 @@ package uploadhandler
 
 import (
 	"backend/utils"
-	inituploadhandler "backend/websocket-handler/init-upload-handler"
+	"backend/websocket-handler/types"
 	"encoding/base64"
 	"fmt"
 	"os"
 	"path/filepath"
 )
 
-type FileUploadData struct {
-	FileName string `json:"fileName"`
-	FileData string `json:"fileData"`
-}
-
 const SAVE_DIR = "./uploads"
 
-func HandleFileUpload(Data FileUploadData) error {
+func HandleFileUpload(Data types.FileUploadData) error {
 	// Extract the directory from the file name
 	dirPath := filepath.Join(SAVE_DIR, filepath.Dir(Data.FileName))
 
@@ -45,9 +40,6 @@ func HandleFileUpload(Data FileUploadData) error {
 	if _, err := file.Write(data); err != nil {
 		return fmt.Errorf("failed to write to file: %w", err)
 	}
-
-	// Increment the counter
-	inituploadhandler.FilesUploaded++
 
 	return nil
 }
