@@ -1,6 +1,7 @@
 import pandas as pd
+import graphviz
 from typing import List, Optional
-from .constants import HIERARCHY_FILE_PATH
+from .constants import DATA_DIR, HIERARCHY_FILE_PATH
 
 
 class Hierarchy():
