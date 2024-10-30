@@ -16,9 +16,11 @@ class Hierarchy():
 
     def get_children(self, parent_id: str):
 
-        children = self.hierarchy[self.hierarchy["parent_id"] == parent_id]
+        children = self.hierarchy.loc[self.hierarchy["parent_id"] == parent_id,
+                                      'id'].values
+        children.sort()
 
-        return children["id"].tolist()
+        return children.tolist()
 
     def get_leaf_nodes(self, root_id: str) -> List[str]:
         """
@@ -34,5 +36,7 @@ class Hierarchy():
 
         for child in children:
             leaf_nodes.extend(self.get_leaf_nodes(child))
+
+        leaf_nodes.sort()
 
         return leaf_nodes
