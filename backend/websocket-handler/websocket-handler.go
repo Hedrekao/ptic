@@ -13,10 +13,11 @@ import (
 type MessageType string
 
 const (
-	TypeUpload          MessageType = "file_upload"
-	TypeInitUpload      MessageType = "init_upload"
-	TypeSelectMode      MessageType = "select_mode"
-	TypeInitPredictions MessageType = "init_predictions"
+	TypeUpload             MessageType = "file_upload"
+	TypeInitUpload         MessageType = "init_upload"
+	TypeSelectMode         MessageType = "select_mode"
+	TypeInitPredictions    MessageType = "init_predictions"
+	TypePredictionApproval MessageType = "prediction_approval"
 )
 
 var upgrader = websocket.Upgrader{
@@ -77,6 +78,8 @@ func handleConnection(ctx *types.ConnectionContext) {
 			handleSelectMode(ctx, msg.Data)
 		case msg.Type == TypeInitPredictions:
 			handleInitPredictions(ctx)
+		case msg.Type == TypePredictionApproval:
+			handlePredictionApproval(ctx, msg.Data)
 		}
 	}
 }

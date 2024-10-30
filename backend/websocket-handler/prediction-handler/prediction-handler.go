@@ -25,7 +25,7 @@ func HandlePrediction(ctx *types.ConnectionContext) {
 
 		case types.SemiAutomatic:
 			mostProbableClassWeight := prediction.PredictedClasses[0].Weight
-			if mostProbableClassWeight > 0.8 {
+			if mostProbableClassWeight > 0.2 {
 				mostProbableClass := prediction.PredictedClasses[0].Class
 				ctx.ApprovedFiles = append(ctx.ApprovedFiles, types.ApprovedFile{FilePath: prediction.FilePath, Class: mostProbableClass})
 			} else {
