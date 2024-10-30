@@ -8,3 +8,7 @@ venv
 /httpRequests/
 
 **/images
+
+# Mac crap
+**/.idea/
+**/.DS_Store
