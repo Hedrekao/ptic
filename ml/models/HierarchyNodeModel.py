@@ -14,7 +14,8 @@ class ResidualBlock(nn.Module):
         )
 
         self.bn2 = nn.BatchNorm2d(out_channels)
-        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(out_channels, out_channels,
+                               kernel_size=3, padding=1)
 
         # Residual highway
         # If we have stride > 1 in the main path (the one with activations and so on)
@@ -25,7 +26,8 @@ class ResidualBlock(nn.Module):
         # we use 1x1 kernel because we are using this conv layer mostly to adjust shape and not to learn new features
         if stride != 1 or in_channels != out_channels:
             self.shortcut = nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride)
+                nn.Conv2d(in_channels, out_channels,
+                          kernel_size=1, stride=stride)
             )
         # if the shape is not changing we can just use identity mapping (the output is the same as the input)
         else:
@@ -95,7 +97,8 @@ class HierarchyNodeModel(nn.Module):
 
     def _init_weights(self, m):
         if isinstance(m, nn.Conv2d):
-            nn.init.kaiming_normal_(m.weight, mode="fan_in", nonlinearity="relu")
+            nn.init.kaiming_normal_(
+                m.weight, mode="fan_in", nonlinearity="relu")
         elif isinstance(m, nn.BatchNorm2d):
             nn.init.constant_(m.weight, 1)
             nn.init.constant_(m.bias, 0)

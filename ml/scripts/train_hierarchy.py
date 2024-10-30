@@ -7,10 +7,6 @@ from ml.utils.hierarchy import Hierarchy
 
 
 def train_hierarchy():
-    hierarchy = Hierarchy()
-    root_id = hierarchy.get_root_id()
-    queue = [root_id]
-
     device_type = "cpu"
 
     if torch.cuda.is_available():
@@ -35,18 +31,47 @@ def train_hierarchy():
     # prepare dir for saving models
     os.makedirs(MODELS_REGISTRY_PATH, exist_ok=True)
 
+    # decide whether we should start training from scratch or resume training
+
+    model_files = [model.split('.')[0]
+                   for model in os.listdir(MODELS_REGISTRY_PATH)]
+
+    hierarchy = Hierarchy()
+    queue = []
+
+    if len(model_files) == 0:
+        print("Starting training from scratch")
+        root_id = hierarchy.get_root_id()
+        queue.append(root_id)
+    else:
+        model_files.sort()
+        last_trained_node = model_files[-1]
+        parent = hierarchy.get_parent(last_trained_node)
+        if parent is None:
+            queue.append(last_trained_node)
+        else:
+            queue.append(parent)
+
+        print("Resuming training from node ", queue[0])
+
     # bfs traversal for training internal hierarchy nodes
     while len(queue) > 0:
         node_id = queue.pop(0)
         children = hierarchy.get_children(node_id)
 
-        if len(children) == 0:
-            continue
-
         queue.extend(children)
 
+        if len(children) == 0 or node_id in model_files:
+            continue
+
         print(f"Training node {node_id}")
+        if len(children) == 1:
+            # TODO: handle single child case (we don't need to train the parent)
+            pass
         train_singular_model(hierarchy, node_id, train_config, device_type)
         print(f"Finished training node {node_id}")
 
     print("Finished training hierarchy")
+
+
+train_hierarchy()
