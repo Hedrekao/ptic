@@ -1,9 +1,28 @@
 import os
 import torch
+import json
 
 from ml.scripts.train_single import TrainConfig, train_singular_model
 from ml.utils.constants import MODELS_REGISTRY_PATH
 from ml.utils.hierarchy import Hierarchy
+
+
+class ModelMetadata:
+    def __init__(self, model_name: str, n_classes: int) -> None:
+        self.model_name = model_name
+        self.n_classes = n_classes
+        self.is_single_label = False
+
+    def save(self):
+        path = os.path.join(MODELS_REGISTRY_PATH, f"{self.model_name}.json")
+
+        result = {
+            "n_classes": self.n_classes,
+            "is_single_label": self.is_single_label
+        }
+
+        with open(path, "w") as f:
+            json.dump(result, f)
 
 
 def train_hierarchy():
@@ -65,10 +84,15 @@ def train_hierarchy():
             continue
 
         print(f"Training node {node_id}")
+
+        metadata = ModelMetadata(node_id, len(children))
+
         if len(children) == 1:
-            # TODO: handle single child case (we don't need to train the parent)
-            pass
-        train_singular_model(hierarchy, node_id, train_config, device_type)
+            metadata.is_single_label = True
+        else:
+            train_singular_model(hierarchy, node_id, train_config, device_type)
+
+        metadata.save()
         print(f"Finished training node {node_id}")
 
     print("Finished training hierarchy")
