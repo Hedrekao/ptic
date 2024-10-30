@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import graphviz
 from typing import List, Optional
 from .constants import DATA_DIR, HIERARCHY_FILE_PATH
@@ -19,7 +20,7 @@ class Hierarchy():
         parent = self.hierarchy.loc[self.hierarchy["id"]
                                     == child_id, 'parent_id'].values
 
-        if len(parent) == 0:
+        if len(parent) == 0 or pd.isna(parent[0]):
             return None
 
         return parent[0]
@@ -51,7 +52,7 @@ class Hierarchy():
 
         return leaf_nodes
 
-    def draw_hierarchy(self):
+    def draw_tree(self):
 
         dot = graphviz.Digraph(comment='Hierarchy')
 
@@ -83,3 +84,48 @@ class Hierarchy():
                 dot.edge(row['parent_id'], row['id'])
 
         dot.render("hierarchy_tree", DATA_DIR, format='png', cleanup=True)
+
+    def create_matrix_mask(self):
+
+        edges = []  # List of (parent_id, child_id) tuples
+        leaf_nodes = []
+        edge_to_col_idx = {}  # Map (parent, child) -> column index
+
+        root_id = self.get_root_id()
+
+        queue = [root_id]
+
+        while len(queue) > 0:
+            current_node_id = queue.pop(0)
+
+            children = self.get_children(current_node_id)
+
+            if len(children) == 0:
+                leaf_nodes.append(current_node_id)
+
+            for child_id in children:
+                edges.append((current_node_id, child_id))
+                edge_to_col_idx[(current_node_id, child_id)] = len(edges) - 1
+                queue.append(child_id)
+
+        # Create the mask matrix
+        n_leaves = len(leaf_nodes)
+        n_edges = len(edge_to_col_idx)
+        mask_matrix = np.zeros((n_leaves, n_edges), dtype=np.float32)
+
+        for row_idx, leaf_id in enumerate(leaf_nodes):
+            current_node_id = leaf_id
+            while True:
+
+                parent_id = self.get_parent(current_node_id)
+
+                if parent_id is None:  # Reached root
+                    break
+
+                # Mark the edge in the mask
+                edge = (parent_id, current_node_id)
+                col_idx = edge_to_col_idx[edge]
+                mask_matrix[row_idx, col_idx] = 1.0
+                current_node_id = parent_id
+
+        return mask_matrix

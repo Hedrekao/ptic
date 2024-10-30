@@ -1,7 +1,9 @@
 import os
 import torch
 import json
+import numpy as np
 
+from glob import glob
 from ml.scripts.train_single import TrainConfig, train_singular_model
 from ml.utils.constants import MODELS_REGISTRY_PATH
 from ml.utils.hierarchy import Hierarchy
@@ -94,6 +96,12 @@ def train_hierarchy():
 
         metadata.save()
         print(f"Finished training node {node_id}")
+
+    print("Creating hierarchy mask matrix")
+    hierarchy_mask = hierarchy.create_matrix_mask()
+
+    np.save(os.path.join(MODELS_REGISTRY_PATH,
+            "hierarchy_mask.npy"), hierarchy_mask)
 
     print("Finished training hierarchy")
 
