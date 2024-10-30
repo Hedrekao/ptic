@@ -14,11 +14,13 @@ func HandlePrediction(ctx *types.ConnectionContext) {
 			fmt.Println("Error predicting file:", err)
 		}
 
+		fmt.Println("Prediction:", prediction)
+
 		switch ctx.SelectedMode {
 		case types.Automatic:
 			mostProbableClass := prediction.PredictedClasses[0].Class
 			ctx.ApprovedFiles = append(ctx.ApprovedFiles, types.ApprovedFile{FilePath: prediction.FilePath, Class: mostProbableClass})
-
+			websocketresponder.SendPredictionProgress(ctx)
 		case types.Manual:
 			ctx.PredictionFiles = append(ctx.PredictionFiles, prediction)
 			websocketresponder.SendPredictionApprovalRequest(ctx)
@@ -28,6 +30,7 @@ func HandlePrediction(ctx *types.ConnectionContext) {
 			if mostProbableClassWeight > 0.2 {
 				mostProbableClass := prediction.PredictedClasses[0].Class
 				ctx.ApprovedFiles = append(ctx.ApprovedFiles, types.ApprovedFile{FilePath: prediction.FilePath, Class: mostProbableClass})
+				websocketresponder.SendPredictionProgress(ctx)
 			} else {
 				ctx.PredictionFiles = append(ctx.PredictionFiles, prediction)
 				websocketresponder.SendPredictionApprovalRequest(ctx)
@@ -43,6 +46,7 @@ func HandlePredictionApproval(ctx *types.ConnectionContext, data types.Predictio
 	}
 
 	ctx.ApprovedFiles = append(ctx.ApprovedFiles, approvedFile)
+	ctx.IsAwaitingApproval = false
 
 	websocketresponder.SendPredictionProgress(ctx)
 	websocketresponder.SendPredictionApprovalRequest(ctx)

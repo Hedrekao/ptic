@@ -80,7 +80,7 @@ async def predict(request: ImageRequest) -> PredictionResponse:
 
 
     # Get image from file system
-    image = Image.open(request.filePath)
+    image = Image.open('backend/uploads/' + request.filePath)
 
     # TODO: Preprocess image
 
@@ -111,7 +111,7 @@ def batch_predict(request: BatchImageRequest) -> BatchPredictionResponse:
     """
 
     # Get images from file system
-    images = [Image.open(filePath) for filePath in request.filePaths]
+    images = [Image.open('backend/uploads/' + filePath) for filePath in request.filePaths]
 
     # Simulate some processing time (100-300ms)
 

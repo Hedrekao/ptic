@@ -12,3 +12,5 @@ venv
 # Mac crap
 **/.idea/
 **/.DS_Store
+
+**/uploads

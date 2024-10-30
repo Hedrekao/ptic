@@ -23,6 +23,7 @@ export const UploadContextProvider = (props: PropsWithChildren) => {
     useEffect(() => {
         register(ERegisterEvent.UPLOAD_PROGRESS, (data: TRegisterEvent['data']) => {
             const uploadProgressData = data as TUploadProgressPayload
+            console.log(uploadProgressData.progress)
             setProgress(uploadProgressData.progress)
         })
     }, [])

@@ -52,14 +52,19 @@ func handleFileUpload(ctx *types.ConnectionContext, data interface{}) {
 }
 
 func handleSelectMode(ctx *types.ConnectionContext, data interface{}) {
+	fmt.Println(data)
 	dataMap, ok := data.(map[string]interface{})
 	if !ok {
 		fmt.Println("Error: expected map for SelectMode, but got a different type")
 		return
 	}
+	fmt.Println(dataMap)
+	fmt.Println(dataMap["mode"])
+
+	mode := dataMap["mode"].(string)
 
 	modeSelectData := types.SelectModeData{
-		Mode: dataMap["mode"].(types.EMode),
+		Mode: types.EMode(mode),
 	}
 
 	ctx.SelectedMode = modeSelectData.Mode
@@ -70,6 +75,7 @@ func handleSelectMode(ctx *types.ConnectionContext, data interface{}) {
 
 func handleInitPredictions(ctx *types.ConnectionContext) {
 	predictionhandler.HandlePrediction(ctx)
+	websocketresponder.SendPredictionProgress(ctx)
 }
 
 func handlePredictionApproval(ctx *types.ConnectionContext, data interface{}) {
@@ -80,7 +86,7 @@ func handlePredictionApproval(ctx *types.ConnectionContext, data interface{}) {
 	}
 
 	predictionApprovalData := types.PredictionApprovalData{
-		FilePath: dataMap["filePath"].(string),
+		FilePath: dataMap["fileName"].(string),
 		Class:    dataMap["class"].(string),
 	}
 

@@ -2,6 +2,7 @@ import React, { PropsWithChildren } from 'react'
 import { Check } from 'lucide-react'
 
 export type SettingOptionValue = 'automatic' | 'semi-automatic' | 'manual'
+
 interface SettingOptionProps extends PropsWithChildren {
   value: SettingOptionValue
   isSelected: boolean

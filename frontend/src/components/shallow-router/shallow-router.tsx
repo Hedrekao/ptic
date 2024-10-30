@@ -3,12 +3,16 @@
 import React, { useContext } from 'react'
 import UploadPage from 'app/components/pages/upload/page'
 import SettingsPage from 'app/components/pages/settings/page'
+import { PredictionsPage } from 'app/components/pages/predictions/page'
+import { UploadContextProvider } from 'app/components/pages/upload/_components/upload-context'
+import { PredictionsContextProvider } from 'app/components/pages/predictions/_components/predictions-context'
 
-type TPath = 'upload' | 'settings'
+type TPath = 'upload' | 'settings' | 'predictions'
 
 const PATH_MAP = {
-  upload: <UploadPage />,
+  upload: <UploadContextProvider><UploadPage /></UploadContextProvider>,
   settings: <SettingsPage />,
+  predictions: <PredictionsContextProvider><PredictionsPage/></PredictionsContextProvider>,
 }
 
 interface TShallowRouterContext {
