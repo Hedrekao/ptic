@@ -1,6 +1,8 @@
+import os
 import torch
 
 from ml.scripts.train_single import TrainConfig, train_singular_model
+from ml.utils.constants import MODELS_REGISTRY_PATH
 from ml.utils.hierarchy import Hierarchy
 
 
@@ -30,9 +32,16 @@ def train_hierarchy():
         optimizer="adamw",
     )
 
+    # prepare dir for saving models
+    os.makedirs(MODELS_REGISTRY_PATH, exist_ok=True)
+
+    # bfs traversal for training internal hierarchy nodes
     while len(queue) > 0:
         node_id = queue.pop(0)
         children = hierarchy.get_children(node_id)
+
+        if len(children) == 0:
+            continue
 
         queue.extend(children)
 

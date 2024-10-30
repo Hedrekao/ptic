@@ -1,4 +1,5 @@
 import logging
+import os
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Tuple
@@ -11,6 +12,7 @@ from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
 from ml.models.HierarchyNodeModel import HierarchyNodeModel
+from ml.utils.constants import MODELS_REGISTRY_PATH
 from ml.utils.data_loader import PrefetchLoader, create_images_dataloader
 from ml.utils.hierarchy import Hierarchy
 from ml.utils.logger import create_file_logger
@@ -365,10 +367,11 @@ def train_singular_model(hierarchy: Hierarchy, node_id: str, train_config: Train
         if smoothed_val_loss < best_val_loss:
             best_val_loss = smoothed_val_loss
             patience = 0
-            torch.save(model.state_dict(), f'model_{node_id}.pth')
+            torch.save(model.state_dict(), os.path.join(
+                MODELS_REGISTRY_PATH, f'{node_id}.pth'))
             logger.info(f'Saved new best model with val_loss: {val_loss:.4f}')
 
-            wandb.save(f'model_{node_id}.pth')
+            wandb.save(f'{node_id}.pth')
             wandb.run.summary["best_val_loss"] = best_val_loss
             wandb.run.summary["best_val_acc"] = val_acc
         else:
@@ -401,7 +404,7 @@ if __name__ == "__main__":
     root_id = "n03620052"
     train_singular_model(hierarchy, root_id, config, "cpu")
 
-    state_dict = torch.load(f'model_{root_id}.pth')
+    state_dict = torch.load(f'{root_id}.pth')
 
     children = hierarchy.get_children(root_id)
     model = HierarchyNodeModel(len(children))
