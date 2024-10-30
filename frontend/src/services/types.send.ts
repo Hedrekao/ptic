@@ -1,7 +1,9 @@
+import { SettingOptionValue } from 'app/components/pages/settings/_components/settings-option'
+
 export enum ESendEvent {
   FILE_UPLOAD_INIT = 'init_upload',
   FILE_UPLOAD = 'file_upload',
-  MODE_SELECTED = 'mode_selected',
+  MODE_SELECTED = 'select_mode',
 }
 
 type TFileUploadInitPayload = {
@@ -14,7 +16,7 @@ type TFileUploadPayload = {
 }
 
 type TModeSelectedPayload = {
-  mode: string
+  mode: SettingOptionValue
 }
 
 export type TSendEvent =
