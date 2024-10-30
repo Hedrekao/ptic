@@ -1,0 +1,21 @@
+id,name,parent_id
+n02729837,appliance,
+n03251766,"dryer, drier",n02729837
+n03483316,"hand blower, blow dryer, blow drier, hair dryer, hair drier",n03251766
+n03528263,"home appliance, household appliance",n02729837
+n04179913,sewing machine,n03528263
+n03584829,"iron, smoothing iron",n03528263
+n04517823,"vacuum, vacuum cleaner",n03528263
+n03620052,kitchen appliance,n03528263
+n03063338,coffee maker,n03620052
+n03297495,espresso maker,n03063338
+n03761084,"microwave, microwave oven",n03620052
+n04442312,toaster,n03620052
+n04542943,waffle iron,n03620052
+n03862676,oven,n03620052
+n03259280,Dutch oven,n03862676
+n04111531,rotisserie,n03862676
+n04580493,white goods,n03528263
+n03207941,"dishwasher, dish washer, dishwashing machine",n04580493
+n04070727,"refrigerator, icebox",n04580493
+n04554684,"washer, automatic washer, washing machine",n04580493

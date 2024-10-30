@@ -7,7 +7,12 @@ venv
 # Editor-based HTTP Client requests
 /httpRequests/
 
-**/images
+**/*images
+**/__pycache__
+**.pth
+/ml/logs
+wandb
+
 
 # Mac crap
 **/.idea/
