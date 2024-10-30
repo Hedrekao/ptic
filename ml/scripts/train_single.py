@@ -47,7 +47,7 @@ class TrainConfig:
         return self.max_lr / self.final_div_factor
 
 
-def __get_data_loaders(hierarchy: Hierarchy, node_id: str, train_config: TrainConfig, device: torch.device) -> Tuple[DataLoader, DataLoader, int]:
+def __get_data_loaders(hierarchy: Hierarchy, node_id: str, train_config: TrainConfig, device: torch.device) -> Tuple[PrefetchLoader, PrefetchLoader, int]:
     children = hierarchy.get_children(node_id)
     categories_dict = {child: hierarchy.get_leaf_nodes(
         child) for child in children}
@@ -383,6 +383,8 @@ def train_singular_model(hierarchy: Hierarchy, node_id: str, train_config: Train
 
     logger.info('Training completed')
     wandb.finish()
+
+    train_loader.clean_tmp_folder()
 
 
 if __name__ == "__main__":

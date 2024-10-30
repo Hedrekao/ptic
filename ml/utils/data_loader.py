@@ -269,7 +269,7 @@ class PrefetchLoader:
             if self.prefetch_thread is not None:
                 self.prefetch_thread.join()
 
-    def remove_tmp_folder(self):
+    def clean_tmp_folder(self):
         tmp_dir = os.path.join(self.root_dir, 'tmp')
         for file in os.listdir(tmp_dir):
             os.remove(os.path.join(tmp_dir, file))
