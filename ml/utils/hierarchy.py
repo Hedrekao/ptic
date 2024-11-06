@@ -41,6 +41,17 @@ class Hierarchy():
 
         return [child for child in children if not self.is_leaf(child)]
 
+    def get_categories_list(self):
+        leaf_nodes = self.get_leaf_nodes(self.get_root_id())
+
+        categories_dict = []
+
+        for leaf in leaf_nodes:
+            categories_dict.append(
+                f"{self.hierarchy.loc[self.hierarchy['id'] == leaf, 'name'].values[0]} ({leaf})")
+
+        return categories_dict
+
     def get_leaf_nodes(self, root_id: str) -> List[str]:
         """
         Recursively get all leaf nodes ids under a given root node

@@ -1,39 +1,38 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 import base64
 from PIL import Image
 import io
-import random
-from typing import Dict, List, Optional
+from typing import Dict
 import time
 
-app = FastAPI()
+from ml.models.HierarchyModel import HierachyModel
+from ml.utils.hierarchy import Hierarchy
+
+
+def start_app():
+    app = FastAPI()
+    hierarchy = Hierarchy()
+    app.model = HierachyModel(hierarchy=hierarchy)
+
+    app.categories = hierarchy.get_categories_list()
+    return app
+
+
+app = start_app()
 
 
 class ImageRequest(BaseModel):
     filePath: str  # Location of image file
 
 
-class BatchImageRequest(BaseModel):
-    filePaths: List[str]  # Location of image files
-    batch_size: Optional[int] = Field(default=16, gt=0, le=64)
-
-
 class PredictionResponse(BaseModel):
     predictions: Dict[str, float]
-
-
-class BatchPredictionResponse(BaseModel):
-    predictions: List[Dict[str, float]]
-
-
-MOCK_CATEGORIES = [
-    "iron", "washer, automatic washer, washing machine", "refrigerator, icebox", "dishwasher, dish washer, dishwashing machine",
-    "rotisserie", "Dutch oven", "espresso maker", "microwave, microwave oven", "toaster", "waffle iron",
-]
+    processing_time: float
 
 
 def base64_to_pil(base64_string: str) -> Image.Image:
+    # We should use that later for supporting base64 encoded images
     """Convert base64 string to PIL Image."""
     try:
         # Remove data URL prefix if present
@@ -52,43 +51,36 @@ def base64_to_pil(base64_string: str) -> Image.Image:
             status_code=400, detail=f"Invalid image data: {str(e)}")
 
 
-def generate_mock_predictions(n_categories: int = 10) -> Dict[str, float]:
-    """Generate mock predictions with random probabilities that sum to 1."""
-    raw_predictions = [random.random() for _ in range(n_categories)]
-    total = sum(raw_predictions)
-    normalized_predictions = [p/total for p in raw_predictions]
-
-    return {
-        # Convert to float for JSON serialization
-        category: round(float(pred), 5)
-        for category, pred in zip(MOCK_CATEGORIES, normalized_predictions)
-    }
-
-
 @app.post("/predict", response_model=PredictionResponse)
 async def predict(request: ImageRequest) -> PredictionResponse:
     """
     Process image and return mock predictions.
 
     Args:
-        request: ImageRequest containing base64 encoded image
+        request: ImageRequest containing image file path
 
     Returns:
         PredictionResponse with mock predictions and processing time
     """
     start_time = time.time()
 
-
     # Get image from file system
+    # TODO this should work either with a file path or a base64 encoded image
+    # TODO this should be abstracted to detect whether to use azure blob storage or not
     image = Image.open('backend/uploads/' + request.filePath)
 
-    # TODO: Preprocess image
+    probs = app.model.predict(image)
 
-    # Simulate some processing time (100-300ms)
-    time.sleep(random.uniform(0.1, 0.3))
+    # Get top 5 indices
+    top5_indices = probs.argsort()[-5:][::-1]
 
-    # TODO: Generate mock predictions ( should be replaced with actual model inference)
-    predictions = generate_mock_predictions()
+    # Get top 5 probabilities
+    top5_probs = probs[top5_indices]
+
+    # Get top 5 categories
+    predictions = {
+        app.categories[index]: prob for index, prob in zip(top5_indices, top5_probs)
+    }
 
     processing_time = time.time() - start_time
 
@@ -96,31 +88,6 @@ async def predict(request: ImageRequest) -> PredictionResponse:
         predictions=predictions,
         processing_time=processing_time
     )
-
-
-@app.post("/batch_predict", response_model=BatchPredictionResponse)
-def batch_predict(request: BatchImageRequest) -> BatchPredictionResponse:
-    """
-    Process images in batch and return mock predictions.
-
-    Args:
-        request: BatchImageRequest containing list of base64 encoded images
-
-    Returns:
-
-    """
-
-    # Get images from file system
-    images = [Image.open('backend/uploads/' + filePath) for filePath in request.filePaths]
-
-    # Simulate some processing time (100-300ms)
-
-    time.sleep(random.uniform(0.1, 0.3))
-
-    # TODO: Generate mock predictions for each image (normally it would one call for entire batch)
-    predictions = [generate_mock_predictions() for _ in images]
-
-    return BatchPredictionResponse(predictions=predictions)
 
 
 if __name__ == "__main__":

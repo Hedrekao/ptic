@@ -12,10 +12,10 @@ from ml.utils.hierarchy import Hierarchy
 
 
 class HierachyModel:
-    def __init__(self):
+    def __init__(self, hierarchy: Hierarchy):
         self.models = {}
         self.metadata = {}
-        self.hierarchy = Hierarchy()
+        self.hierarchy = hierarchy
         self.hierarchy_mask = np.load(
             os.path.join(MODELS_REGISTRY_PATH, "hierarchy_mask.npy"))
         self.config = json.load(
@@ -102,10 +102,3 @@ class HierachyModel:
         leaf_probs /= leaf_probs.sum()
 
         return leaf_probs
-
-
-model = HierachyModel()
-
-img = Image.open("ml/data/raw_images/n03207941/1.jpg")
-
-print(model.predict(img))
