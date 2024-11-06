@@ -11,7 +11,7 @@ from ml.utils.constants import DATA_DIR, MODELS_REGISTRY_PATH
 from ml.utils.hierarchy import Hierarchy
 
 
-class HierachyModel:
+class HierarchyModel:
     def __init__(self, hierarchy: Hierarchy):
         self.models = {}
         self.metadata = {}

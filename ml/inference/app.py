@@ -6,14 +6,14 @@ import io
 from typing import Dict
 import time
 
-from ml.models.HierarchyModel import HierachyModel
+from ml.models import HierarchyModel
 from ml.utils.hierarchy import Hierarchy
 
 
 def start_app():
     app = FastAPI()
     hierarchy = Hierarchy()
-    app.model = HierachyModel(hierarchy=hierarchy)
+    app.model = HierarchyModel(hierarchy=hierarchy)
 
     app.categories = hierarchy.get_categories_list()
     return app

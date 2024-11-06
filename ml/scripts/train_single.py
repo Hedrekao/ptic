@@ -10,7 +10,7 @@ import torch.nn as nn
 import wandb
 from tqdm.auto import tqdm
 
-from ml.models.HierarchyNodeModel import HierarchyNodeModel
+from ml.models.hierarchy_node_model import HierarchyNodeModel
 from ml.utils.constants import MODELS_REGISTRY_PATH
 from ml.utils.data_loader import PrefetchLoader, create_images_dataloader
 from ml.utils.hierarchy import Hierarchy
