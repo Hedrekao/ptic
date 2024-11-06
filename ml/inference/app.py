@@ -69,7 +69,13 @@ async def predict(request: ImageRequest) -> PredictionResponse:
     # TODO this should be abstracted to detect whether to use azure blob storage or not
     image = Image.open('backend/uploads/' + request.filePath)
 
-    probs = app.model.predict(image)
+    # preprocess
+    tensor = app.model.transform_image(image)
+
+    # add dimension to simulate batch size
+    tensor = tensor.unsqueeze(0)
+
+    probs = app.model.predict(tensor)
 
     # Get top 5 indices
     top5_indices = probs.argsort()[-5:][::-1]

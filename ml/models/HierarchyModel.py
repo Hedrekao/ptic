@@ -59,10 +59,12 @@ class HierachyModel:
 
             self.models[file_name] = model
 
-    def predict(self, image: Image):
+    def transform_image(self, image: Image):
+        return self.transform_pipeline(image)
 
-        tensor = self.transform_pipeline(image)
-        tensor = tensor.unsqueeze(0).to(self.device)
+    def predict(self, tensor: torch.Tensor):
+
+        tensor = tensor.to(self.device)
 
         root_node = self.hierarchy.get_root_id()
         preds = []
