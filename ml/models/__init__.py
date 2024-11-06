@@ -1,1 +1,1 @@
-from .HierarchyNodeModel import HierarchyNodeModel
+from .HierarchyNodeModel import HierarchyNodeModel  # noqa: F401

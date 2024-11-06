@@ -33,6 +33,14 @@ class Hierarchy():
 
         return children.tolist()
 
+    def is_leaf(self, node_id: str):
+        return len(self.get_children(node_id)) == 0
+
+    def get_non_leaf_children(self, parent_id: str):
+        children = self.get_children(parent_id)
+
+        return [child for child in children if not self.is_leaf(child)]
+
     def get_leaf_nodes(self, root_id: str) -> List[str]:
         """
         Recursively get all leaf nodes ids under a given root node

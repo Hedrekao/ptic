@@ -8,7 +8,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 import wandb
-from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
 from ml.models.HierarchyNodeModel import HierarchyNodeModel
