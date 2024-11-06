@@ -11,6 +11,8 @@ venv
 **/__pycache__
 **.pth
 /ml/logs
+/ml/data
+/ml/models_registry
 wandb
 
 

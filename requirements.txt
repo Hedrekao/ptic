@@ -10,3 +10,4 @@ torchvision
 fastapi
 uvicorn
 click
+graphviz
