@@ -6,20 +6,19 @@ import (
 	uploadhandler "backend/websocket-handler/upload-handler"
 	websocketresponder "backend/websocket-responder"
 
-	"fmt"
 	"log"
 )
 
 func handleInitUpload(ctx *types.ConnectionContext, data interface{}) {
 	dataMap, ok := data.(map[string]interface{})
 	if !ok {
-		fmt.Println("Error: expected map for InitUploadData, but got a different type")
+		log.Println("Error: expected map for InitUploadData, but got a different type")
 		return
 	}
 
 	numberOfFiles, ok := dataMap["numberOfFiles"].(float64)
 	if !ok {
-		fmt.Println("Error: numberOfFiles is not a float64")
+		log.Println("Error: numberOfFiles is not a float64")
 		return
 	}
 
@@ -29,7 +28,7 @@ func handleInitUpload(ctx *types.ConnectionContext, data interface{}) {
 func handleFileUpload(ctx *types.ConnectionContext, data interface{}) {
 	dataMap, ok := data.(map[string]interface{})
 	if !ok {
-		fmt.Println("Error: expected map for FileUploadData, but got a different type")
+		log.Println("Error: expected map for FileUploadData, but got a different type")
 		return
 	}
 
@@ -48,18 +47,16 @@ func handleFileUpload(ctx *types.ConnectionContext, data interface{}) {
 	ctx.FilesToPredict = append(ctx.FilesToPredict, fileUploadData.FileName)
 
 	websocketresponder.SendUploadProgress(ctx)
-	fmt.Println("Received filename:", fileUploadData.FileName)
+	log.Println("Received filename:", fileUploadData.FileName)
 }
 
 func handleSelectMode(ctx *types.ConnectionContext, data interface{}) {
-	fmt.Println(data)
+	log.Println(data)
 	dataMap, ok := data.(map[string]interface{})
 	if !ok {
-		fmt.Println("Error: expected map for SelectMode, but got a different type")
+		log.Println("Error: expected map for SelectMode, but got a different type")
 		return
 	}
-	fmt.Println(dataMap)
-	fmt.Println(dataMap["mode"])
 
 	mode := dataMap["mode"].(string)
 
@@ -70,7 +67,7 @@ func handleSelectMode(ctx *types.ConnectionContext, data interface{}) {
 	ctx.SelectedMode = modeSelectData.Mode
 
 	websocketresponder.SendModeSelected(ctx)
-	fmt.Println("Mode selected for connection:", ctx.Id)
+	log.Println("Mode selected for connection:", ctx.Id)
 }
 
 func handleInitPredictions(ctx *types.ConnectionContext) {
@@ -81,7 +78,7 @@ func handleInitPredictions(ctx *types.ConnectionContext) {
 func handlePredictionApproval(ctx *types.ConnectionContext, data interface{}) {
 	dataMap, ok := data.(map[string]interface{})
 	if !ok {
-		fmt.Println("Error: expected map for PredictionApprovalData, but got a different type")
+		log.Println("Error: expected map for PredictionApprovalData, but got a different type")
 		return
 	}
 
