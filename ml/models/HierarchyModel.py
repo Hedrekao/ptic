@@ -98,6 +98,14 @@ class HierachyModel:
 
         leaf_probs = np.exp(self.hierarchy_mask @ log_probs)
 
+        # normalize leaf probabilities
         leaf_probs /= leaf_probs.sum()
 
         return leaf_probs
+
+
+model = HierachyModel()
+
+img = Image.open("ml/data/raw_images/n03207941/1.jpg")
+
+print(model.predict(img))

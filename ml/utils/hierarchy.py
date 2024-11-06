@@ -136,4 +136,10 @@ class Hierarchy():
                 mask_matrix[row_idx, col_idx] = 1.0
                 current_node_id = parent_id
 
+        # we want to not penalize predictions by how deep they are in the hierarchy
+        # therefore we will normalize the mask matrix by the depth of each leaf
+        # this will make sure that all leaf nodes have the same weight
+        leaves_depth = np.sum(mask_matrix, axis=1)
+        mask_matrix = mask_matrix / np.expand_dims(leaves_depth, axis=1)
+
         return mask_matrix
