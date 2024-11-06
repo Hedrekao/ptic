@@ -77,6 +77,8 @@ async def predict(request: ImageRequest) -> PredictionResponse:
 
     probs = app.model.predict(tensor)
 
+    probs = probs.squeeze(0)
+
     # Get top 5 indices
     top5_indices = probs.argsort()[-5:][::-1]
 
@@ -85,7 +87,7 @@ async def predict(request: ImageRequest) -> PredictionResponse:
 
     # Get top 5 categories
     predictions = {
-        app.categories[index]: prob for index, prob in zip(top5_indices, top5_probs)
+        app.categories[index]: round(float(prob), 5) for index, prob in zip(top5_indices, top5_probs)
     }
 
     processing_time = time.time() - start_time

@@ -71,6 +71,7 @@ class HierarchyModel:
 
         queue = [root_node]
 
+        batch_size = tensor.shape[0]
         while len(queue) > 0:
 
             node = queue.pop(0)
@@ -81,26 +82,27 @@ class HierarchyModel:
             children = self.hierarchy.get_non_leaf_children(node)
 
             if is_single_label:
-                preds.append([1.0])
+                output = torch.ones((batch_size, 1))
+                preds.append(output)
             else:
                 model = self.models[node]
                 model.eval()
 
                 with torch.no_grad():
                     output = model(tensor)
-                    output = F.softmax(output, dim=-1).squeeze().cpu().numpy()
+                    output = F.softmax(output, dim=-1).cpu().numpy()
 
                 preds.append(output)
 
             queue.extend(children)
 
-        all_probs = np.concatenate(preds)
+        all_probs = np.concatenate(preds, axis=1)
 
         log_probs = np.log(all_probs + 1e-10)
 
-        leaf_probs = np.exp(self.hierarchy_mask @ log_probs)
+        leaf_probs = np.exp(log_probs @ self.hierarchy_mask.T)
 
         # normalize leaf probabilities
-        leaf_probs /= leaf_probs.sum()
+        leaf_probs /= leaf_probs.sum(axis=1, keepdims=True)
 
         return leaf_probs
