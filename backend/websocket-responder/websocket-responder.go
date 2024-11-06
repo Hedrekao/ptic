@@ -1,6 +1,7 @@
 package websocketresponder
 
 import (
+	"backend/utils"
 	"backend/websocket-handler/types"
 	"fmt"
 
@@ -35,11 +36,6 @@ func SendUploadProgress(ctx *types.ConnectionContext) {
 	}
 
 	sendWebSocketResponse(ctx.Conn, WebSocketResponse{Type: "upload_progress", Data: response})
-
-	if ctx.FilesUploaded == ctx.TotalFilesToBeUploaded {
-		ctx.FilesUploaded = 0
-		ctx.TotalFilesToBeUploaded = 0
-	}
 }
 
 func SendPredictionProgress(ctx *types.ConnectionContext) {
@@ -54,6 +50,8 @@ func SendPredictionProgress(ctx *types.ConnectionContext) {
 
 	sendWebSocketResponse(ctx.Conn, WebSocketResponse{Type: "prediction_progress", Data: response})
 
+	fmt.Println("Approved files:", len(ctx.ApprovedFiles))
+	fmt.Println("Total files to be uploaded:", ctx.TotalFilesToBeUploaded)
 	if len(ctx.ApprovedFiles) == ctx.TotalFilesToBeUploaded {
 		sendCSVFile(ctx)
 	}
@@ -71,12 +69,19 @@ func SendPredictionApprovalRequest(ctx *types.ConnectionContext) {
 		"fileToApprove": approval,
 	}
 
+	ctx.IsAwaitingApproval = true
 	sendWebSocketResponse(ctx.Conn, WebSocketResponse{Type: "prediction_approval_request", Data: response})
 }
 
 func sendCSVFile(ctx *types.ConnectionContext) {
+	csv, err := utils.ConvertToCSV(ctx.ApprovedFiles)
+	if err != nil {
+		fmt.Println("Error converting to CSV:", err)
+		return
+	}
+
 	response := map[string]string{
-		"csvData": "mock",
+		"csvData": csv,
 	}
 
 	sendWebSocketResponse(ctx.Conn, WebSocketResponse{Type: "csv_file", Data: response})

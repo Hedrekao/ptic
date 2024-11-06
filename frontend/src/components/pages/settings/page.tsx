@@ -5,9 +5,8 @@ import { Panel } from 'app/components/panel/panel'
 import { Button, buttonVariants } from 'app/components/ui/button'
 import { ChevronRight } from 'lucide-react'
 import { SettingOption, SettingOptionValue } from './_components/settings-option'
-import { useShallowRouter } from 'app/components/shallow-router/shallow-router'
-import { send, register } from 'app/services/websocket'
-import { ERegisterEvent, TRegisterEvent } from 'app/services/types.register'
+import { useShallowRouter } from 'app/components/shallow-router'
+import { send } from 'app/services/websocket'
 import { ESendEvent } from 'app/services/types.send'
 
 const SettingsPage = () => {
@@ -15,19 +14,20 @@ const SettingsPage = () => {
   const { navigate } = useShallowRouter()
 
   useEffect(() => {
-    register(ERegisterEvent.MODE_SELECTED, (data: TRegisterEvent['data']) => {
-      console.log('Mode selected event received:', data)
+    send({
+      type: ESendEvent.MODE_SELECTED,
+      data: { mode: selectedMode },
     })
-  }, [])
+  }, [selectedMode])
 
   const handleModeChange = (value: SettingOptionValue) => {
     setSelectedMode(value)
-    console.log('Mode changed:', selectedMode)
   }
 
   const handleNextClick = () => {
-    send({ type: ESendEvent.MODE_SELECTED, data: { mode: selectedMode } })
-    console.log('Mode selected:', selectedMode)
+    send({ type: ESendEvent.INIT_PREDICTIONS })
+    navigate('predictions')
+
   }
 
   const goToUploadPage = () => {
@@ -55,9 +55,9 @@ const SettingsPage = () => {
         </SettingOption>
 
         <SettingOption value="manual" isSelected={selectedMode === 'manual'} onChange={handleModeChange}>
-          Semi-automatic on demand
+          Manual
           <p className="text-sm font-normal text-gray-500 mt-1">
-            Classify images and allow for manual selection when necessary
+            Manually classify images into the correct category
           </p>
         </SettingOption>
       </div>
