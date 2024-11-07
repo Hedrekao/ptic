@@ -82,8 +82,7 @@ class HierarchyModel:
             children = self.hierarchy.get_non_leaf_children(node)
 
             if is_single_label:
-                output = torch.ones((batch_size, 1))
-                preds.append(output)
+                output = np.ones((batch_size, 1))
             else:
                 model = self.models[node]
                 model.eval()
@@ -92,7 +91,7 @@ class HierarchyModel:
                     output = model(tensor)
                     output = F.softmax(output, dim=-1).cpu().numpy()
 
-                preds.append(output)
+            preds.append(output)
 
             queue.extend(children)
 
