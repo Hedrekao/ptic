@@ -30,7 +30,7 @@ export const ApprovalBlock = () => {
           {approvalRequest.predictedClasses.map(predictedClass => (
             <div className="flex items-center space-x-2" key={predictedClass.class}>
               <RadioGroupItem value={predictedClass.class} id={predictedClass.class} />
-              <Label htmlFor={predictedClass.class}>{predictedClass.class} ({predictedClass.weight * 100}%)</Label>
+              <Label htmlFor={predictedClass.class}>{predictedClass.class} ({(predictedClass.weight * 100).toFixed(3)}%)</Label>
             </div>
           ))}
         </RadioGroup>
