@@ -18,12 +18,12 @@ func ConvertToCSV(approvedFiles []types.ApprovedFile) (string, error) {
 	var sb strings.Builder
 	writer := csv.NewWriter(&sb)
 
-	if err := writer.Write([]string{"FilePath", "Class"}); err != nil {
+	if err := writer.Write([]string{"ProductName", "Class"}); err != nil {
 		return "", err
 	}
 
 	for _, file := range approvedFiles {
-		if err := writer.Write([]string{file.FilePath, file.Class}); err != nil {
+		if err := writer.Write([]string{file.ProductName, file.Class}); err != nil {
 			return "", err
 		}
 	}

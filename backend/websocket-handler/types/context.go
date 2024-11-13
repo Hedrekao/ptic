@@ -16,13 +16,14 @@ type ConnectionContext struct {
 }
 
 type ApprovedFile struct {
-	FilePath string `json:"fileName"`
-	Class    string `json:"class"`
+	ProductName string `json:"productName"`
+	Class       string `json:"class"`
 }
 
 type PredictionFile struct {
-	FilePath         string           `json:"fileName"`
+	ProductName      string           `json:"productName"`
 	PredictedClasses []PredictedClass `json:"predictedClasses"`
+	FilePaths        []string         `json:"filePaths"`
 }
 
 type PredictedClass struct {

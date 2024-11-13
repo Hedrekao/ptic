@@ -51,8 +51,8 @@ func SendPredictionProgress(ctx *types.ConnectionContext) {
 	sendWebSocketResponse(ctx.Conn, WebSocketResponse{Type: "prediction_progress", Data: response})
 
 	fmt.Println("Approved files:", len(ctx.ApprovedFiles))
-	fmt.Println("Total files to be uploaded:", ctx.TotalFilesToBeUploaded)
-	if len(ctx.ApprovedFiles) == ctx.TotalFilesToBeUploaded {
+	fmt.Println("Total products to be predicted:", len(ctx.FilesToPredict))
+	if len(ctx.ApprovedFiles) == len(ctx.FilesToPredict) {
 		sendCSVFile(ctx)
 	}
 }

@@ -105,8 +105,8 @@ func handlePredictionApproval(ctx *types.ConnectionContext, data interface{}) {
 	}
 
 	predictionApprovalData := types.PredictionApprovalData{
-		FilePath: dataMap["fileName"].(string),
-		Class:    dataMap["class"].(string),
+		ProductName: dataMap["productName"].(string),
+		Class:       dataMap["class"].(string),
 	}
 
 	predictionhandler.HandlePredictionApproval(ctx, predictionApprovalData)
