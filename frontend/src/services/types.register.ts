@@ -1,4 +1,3 @@
-
 export enum ERegisterEvent {
   UPLOAD_PROGRESS = 'upload_progress',
   MODE_SELECTED = 'mode_selected',
@@ -22,11 +21,12 @@ export type TPredictionProgressPayload = {
 
 export type TPredictionApprovalRequestPayload = {
   fileToApprove: {
-    fileName: string
+    productName: string
     predictedClasses: {
       class: string
       weight: number
     }[]
+    filePaths: string[]
   }
 }
 
@@ -34,23 +34,24 @@ export type TCsvFilePayload = {
   csvData: string
 }
 
-export type TRegisterEvent = {
-  type: ERegisterEvent.UPLOAD_PROGRESS
-  data: TUploadProgressPayload
-} | {
-  type: ERegisterEvent.MODE_SELECTED
-  data: TModeSelectedPayload
-} | {
-  type: ERegisterEvent.PREDICTION_PROGRESS
-  data: TPredictionProgressPayload
-} | {
-  type: ERegisterEvent.PREDICTION_APPROVAL_REQUEST
-  data: TPredictionApprovalRequestPayload
-} | {
-  type: ERegisterEvent.CSV_FILE
-  data: TCsvFilePayload
-}
-
-
-
-
+export type TRegisterEvent =
+  | {
+      type: ERegisterEvent.UPLOAD_PROGRESS
+      data: TUploadProgressPayload
+    }
+  | {
+      type: ERegisterEvent.MODE_SELECTED
+      data: TModeSelectedPayload
+    }
+  | {
+      type: ERegisterEvent.PREDICTION_PROGRESS
+      data: TPredictionProgressPayload
+    }
+  | {
+      type: ERegisterEvent.PREDICTION_APPROVAL_REQUEST
+      data: TPredictionApprovalRequestPayload
+    }
+  | {
+      type: ERegisterEvent.CSV_FILE
+      data: TCsvFilePayload
+    }

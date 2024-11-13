@@ -23,7 +23,7 @@ type TModeSelectedPayload = {
 }
 
 type TPredictionApprovalPayload = {
-  fileName: string
+  productName: string
   class: string
 }
 
