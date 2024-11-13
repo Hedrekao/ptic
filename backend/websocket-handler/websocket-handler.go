@@ -39,8 +39,9 @@ func HandleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := &types.ConnectionContext{
-		Conn: conn,
-		Id:   r.RemoteAddr, // Use RemoteAddr for ID, or generate a unique one
+		Conn:           conn,
+		Id:             r.RemoteAddr, // Use RemoteAddr for ID, or generate a unique one
+		FilesToPredict: make(map[string][]string),
 	}
 
 	fmt.Println("New WebSocket connection established:", ctx.Id)

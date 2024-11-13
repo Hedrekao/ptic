@@ -5,6 +5,7 @@ import (
 	types "backend/websocket-handler/types"
 	uploadhandler "backend/websocket-handler/upload-handler"
 	websocketresponder "backend/websocket-responder"
+	"path/filepath"
 
 	"log"
 )
@@ -22,7 +23,14 @@ func handleInitUpload(ctx *types.ConnectionContext, data interface{}) {
 		return
 	}
 
+	rootDir, ok := dataMap["rootDir"].(string)
+	if !ok {
+		log.Println("Error: rootDir is not a string")
+		return
+	}
+
 	ctx.TotalFilesToBeUploaded = int(numberOfFiles)
+	ctx.RootDir = rootDir
 }
 
 func handleFileUpload(ctx *types.ConnectionContext, data interface{}) {
@@ -43,15 +51,29 @@ func handleFileUpload(ctx *types.ConnectionContext, data interface{}) {
 
 	log.Println("File uploaded:", fileUploadData.FileName)
 
+	// Extract productName from either a file name or directory
+	// We use this a key in a map containing paths for files to predict
+	// This allows us to have multiple images for the same product
+	dirPath, fileNameWithExt := filepath.Split(fileUploadData.FileName)
+	dirPath = filepath.Clean(dirPath)
+
+	var productName string
+	if dirPath == ctx.RootDir {
+		ext := filepath.Ext(fileNameWithExt)
+		productName = fileNameWithExt[:len(fileNameWithExt)-len(ext)]
+	} else {
+		_, itemDir := filepath.Split(dirPath)
+		productName = itemDir
+	}
+
 	ctx.FilesUploaded++
-	ctx.FilesToPredict = append(ctx.FilesToPredict, fileUploadData.FileName)
+	ctx.FilesToPredict[productName] = append(ctx.FilesToPredict[productName], fileUploadData.FileName)
 
 	websocketresponder.SendUploadProgress(ctx)
 	log.Println("Received filename:", fileUploadData.FileName)
 }
 
 func handleSelectMode(ctx *types.ConnectionContext, data interface{}) {
-	log.Println(data)
 	dataMap, ok := data.(map[string]interface{})
 	if !ok {
 		log.Println("Error: expected map for SelectMode, but got a different type")
