@@ -1,9 +1,10 @@
 import os
+import json
 import click
 import torch
 import torchvision.transforms.v2 as v2
 from ml.utils.image_statistics import get_images_statistics, print_statistics
-from ml.utils.constants import RAW_IMAGES_PATH, PROCESSED_IMAGES_PATH
+from ml.utils.constants import DATA_DIR, RAW_IMAGES_PATH, PROCESSED_IMAGES_PATH
 from PIL import Image
 
 
@@ -15,6 +16,21 @@ def RGBA2RGB(img: torch.Tensor) -> torch.Tensor:
         return rgb * alpha + bg
 
     return img
+
+
+def create_transform_pipeline(min_size: tuple):
+
+    return v2.Compose([
+        v2.ToImage(),
+        v2.Resize(min_size),
+        v2.RGB(),
+        v2.Lambda(RGBA2RGB),
+        v2.ToDtype(torch.float32, scale=True),
+        v2.Normalize(
+            mean=[0.4529, 0.4129, 0.3755],
+            std=[0.2829, 0.2726, 0.2763]
+        )
+    ])
 
 
 @click.command()
@@ -30,17 +46,7 @@ def preprocess_images(min_size_threshold: int):
 
 def __preprocess_images(min_size: tuple, corrupted_files: set, file_below_min_size: set):
 
-    transform = v2.Compose([
-        v2.ToImage(),
-        v2.Resize(min_size),
-        v2.RGB(),
-        v2.Lambda(RGBA2RGB),
-        v2.ToDtype(torch.float32, scale=True),
-        v2.Normalize(
-            mean=[0.4529, 0.4129, 0.3755],
-            std=[0.2829, 0.2726, 0.2763]
-        )
-    ])
+    transform = create_transform_pipeline(min_size)
 
     for class_name in os.listdir(RAW_IMAGES_PATH):
         base_save_path = os.path.join(PROCESSED_IMAGES_PATH, class_name)
@@ -62,7 +68,10 @@ def __preprocess_images(min_size: tuple, corrupted_files: set, file_below_min_si
 
             torch.save(tensor, save_path)
 
-        print(f"Finished processing {class_name}")
+    with open(os.path.join(DATA_DIR, 'config.json'), 'w') as f:
+        json.dump({"min_size": min_size}, f)
+
+    print(f"Finished processing {class_name}")
 
 
 if __name__ == "__main__":

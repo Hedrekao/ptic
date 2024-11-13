@@ -10,17 +10,19 @@ from ml.utils.hierarchy import Hierarchy
 
 
 class ModelMetadata:
-    def __init__(self, model_name: str, n_classes: int) -> None:
+    def __init__(self, model_name: str, n_classes: int, children: list) -> None:
         self.model_name = model_name
         self.n_classes = n_classes
         self.is_single_label = False
+        self.children = children
 
     def save(self):
         path = os.path.join(MODELS_REGISTRY_PATH, f"{self.model_name}.json")
 
         result = {
             "n_classes": self.n_classes,
-            "is_single_label": self.is_single_label
+            "is_single_label": self.is_single_label,
+            "children": self.children,
         }
 
         with open(path, "w") as f:
@@ -86,7 +88,7 @@ def train_hierarchy():
 
         print(f"Training node {node_id}")
 
-        metadata = ModelMetadata(node_id, len(children))
+        metadata = ModelMetadata(node_id, len(children), children)
 
         if len(children) == 1:
             metadata.is_single_label = True

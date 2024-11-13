@@ -1,3 +1,4 @@
+from collections import defaultdict
 import logging
 import os
 from dataclasses import dataclass
@@ -8,10 +9,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 import wandb
-from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
-from ml.models.HierarchyNodeModel import HierarchyNodeModel
+from ml.models.hierarchy_node_model import HierarchyNodeModel
 from ml.utils.constants import MODELS_REGISTRY_PATH
 from ml.utils.data_loader import PrefetchLoader, create_images_dataloader
 from ml.utils.hierarchy import Hierarchy
@@ -217,11 +217,14 @@ def __train_epoch(
 
 
 @torch.no_grad()
-def __validate(model: nn.Module, loader: PrefetchLoader) -> Tuple[float, float]:
+def __validate(model: nn.Module, loader: PrefetchLoader) -> Tuple[float, float, float, dict]:
     model.eval()
     total_loss = 0
     correct = 0
     total_samples = 0
+
+    correct_per_class = defaultdict(int)
+    total_per_class = defaultdict(int)
 
     criterion = nn.CrossEntropyLoss()
     progress_bar = tqdm(
@@ -231,8 +234,17 @@ def __validate(model: nn.Module, loader: PrefetchLoader) -> Tuple[float, float]:
         loss = criterion(y_pred, y_batch)
 
         total_loss += loss.item()
-        correct += (y_pred.argmax(dim=1) == y_batch).sum().item()
         total_samples += y_batch.size(0)
+
+        # Per-class metrics
+        preds = y_pred.argmax(dim=1)
+        for pred, label in zip(preds, y_batch):
+            label_idx = label.item()
+            total_per_class[label_idx] += 1
+            if pred == label:
+                correct_per_class[label_idx] += 1
+
+        correct += (y_pred.argmax(dim=1) == y_batch).sum().item()
 
         progress_bar.set_postfix(
             loss=f"{loss.item():.4f}",
@@ -241,7 +253,13 @@ def __validate(model: nn.Module, loader: PrefetchLoader) -> Tuple[float, float]:
 
     epoch_loss = total_loss / len(loader)
     epoch_acc = correct / total_samples
-    return epoch_loss, epoch_acc
+
+    class_accuracies = {
+        f"val/class_{k}_accuracy": correct_per_class[k] / total_per_class[k] for k in total_per_class.keys()}
+
+    balanced_accuracy = np.mean(list(class_accuracies.values()))
+
+    return epoch_loss, epoch_acc, balanced_accuracy, class_accuracies
 
 
 def train_singular_model(hierarchy: Hierarchy, node_id: str, train_config: TrainConfig, device_type: str) -> None:
@@ -334,7 +352,8 @@ def train_singular_model(hierarchy: Hierarchy, node_id: str, train_config: Train
         )
 
         # Validation phase
-        val_loss, val_acc = __validate(model, val_loader)
+        val_loss, val_acc, val_balanced_acc, val_class_acc = __validate(
+            model, val_loader)
         smoothed_val_loss = val_smoother.update(val_loss)
 
         # Log metrics to wandb
@@ -344,6 +363,8 @@ def train_singular_model(hierarchy: Hierarchy, node_id: str, train_config: Train
             "train/accuracy": train_acc,
             "val/loss": val_loss,
             "val/accuracy": val_acc,
+            "val/balanced_accuracy": val_balanced_acc,
+            **val_class_acc,
             "val/smoothed_loss": smoothed_val_loss,
             "metrics/acc_gap": train_acc - val_acc,
             "learning_rate": optimizer.param_groups[0]["lr"],
@@ -383,42 +404,3 @@ def train_singular_model(hierarchy: Hierarchy, node_id: str, train_config: Train
 
     logger.info('Training completed')
     wandb.finish()
-
-    train_loader.clean_tmp_folder()
-
-
-if __name__ == "__main__":
-    config = TrainConfig(
-        epochs=150,
-        batch_size=16,
-        max_lr=1.2e-3,
-        div_factor=15.0,
-        final_div_factor=100.0,
-        pct_start=0.4,
-        weight_decay=0.1,
-        grad_clip_value=0.4,
-        label_smoothing=0.1,
-        early_stopping_patience=30,
-        optimizer="adamw",
-    )
-
-    hierarchy = Hierarchy()
-    root_id = "n03620052"
-    train_singular_model(hierarchy, root_id, config, "cpu")
-
-    state_dict = torch.load(f'{root_id}.pth')
-
-    children = hierarchy.get_children(root_id)
-    model = HierarchyNodeModel(len(children))
-
-    model.load_state_dict(state_dict)
-
-    categories_dict = {child: hierarchy.get_leaf_nodes(
-        child) for child in children}
-
-    test_loader = create_images_dataloader(
-        categories_dict, split='test', batch_size=config.batch_size)
-
-    test_loss, test_acc = __validate(model, test_loader)
-
-    print(f"Test Loss: {test_loss:.4f}, Test Acc: {test_acc:.4f}")
