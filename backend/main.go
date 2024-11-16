@@ -2,19 +2,26 @@ package main
 
 import (
 	websockethandler "backend/websocket-handler"
-	"fmt"
+	"log"
 	"net/http"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	fmt.Println("Server starting...")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	log.Println("Server starting...")
 	http.HandleFunc("/ws", websockethandler.HandleWebSocketConnection)
 
 	fs := http.FileServer(http.Dir("./uploads"))
 	http.Handle("/uploads/", http.StripPrefix("/uploads", fs))
 
-	err := http.ListenAndServe(":4200", nil)
+	err = http.ListenAndServe(":4200", nil)
 	if err != nil {
-		fmt.Println("Error starting server:", err)
+		log.Fatal("Error starting server:", err)
 	}
 }

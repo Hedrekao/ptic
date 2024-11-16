@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 	"github.com/gorilla/websocket"
 )
 
@@ -40,8 +42,28 @@ func HandleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
 
 	ctx := &types.ConnectionContext{
 		Conn:           conn,
+		BlobClient:     nil,
 		Id:             r.RemoteAddr, // Use RemoteAddr for ID, or generate a unique one
 		FilesToPredict: make(map[string][]string),
+	}
+
+	// If environment is Azure, create a new Blob client
+	if os.Getenv("ENV") == "AZURE" {
+		blobConnectionString, ok := os.LookupEnv("BLOB_STORAGE_CONNECTION_STRING")
+
+		if !ok {
+			log.Println("Error getting blob storage connection string:", err)
+			return
+		}
+
+		blobClient, err := azblob.NewClientFromConnectionString(blobConnectionString, nil)
+
+		if err != nil {
+			log.Println("Error creating blob client:", err)
+			return
+		}
+
+		ctx.BlobClient = blobClient
 	}
 
 	fmt.Println("New WebSocket connection established:", ctx.Id)
