@@ -6,22 +6,24 @@ type ConnectionContext struct {
 	Conn                   *websocket.Conn
 	Id                     string
 	SelectedMode           EMode
+	RootDir                string
 	FilesUploaded          int
 	TotalFilesToBeUploaded int
-	FilesToPredict         []string
+	FilesToPredict         map[string][]string
 	ApprovedFiles          []ApprovedFile   // Files with final prediction, either approved or automaically predicted
 	PredictionFiles        []PredictionFile // Files to be approved manually
 	IsAwaitingApproval     bool
 }
 
 type ApprovedFile struct {
-	FilePath string `json:"fileName"`
-	Class    string `json:"class"`
+	ProductName string `json:"productName"`
+	Class       string `json:"class"`
 }
 
 type PredictionFile struct {
-	FilePath         string           `json:"fileName"`
+	ProductName      string           `json:"productName"`
 	PredictedClasses []PredictedClass `json:"predictedClasses"`
+	FilePaths        []string         `json:"filePaths"`
 }
 
 type PredictedClass struct {

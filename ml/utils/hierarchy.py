@@ -42,15 +42,21 @@ class Hierarchy():
         return [child for child in children if not self.is_leaf(child)]
 
     def get_categories_list(self):
-        leaf_nodes = self.get_leaf_nodes(self.get_root_id())
 
-        categories_dict = []
+        queue = [self.get_root_id()]
+        categories_list = []
 
-        for leaf in leaf_nodes:
-            categories_dict.append(
-                f"{self.hierarchy.loc[self.hierarchy['id'] == leaf, 'name'].values[0]} ({leaf})")
+        while queue:
+            node_id = queue.pop(0)
 
-        return categories_dict
+            if self.is_leaf(node_id):
+                categories_list.append(
+                    f"{self.hierarchy.loc[self.hierarchy['id'] == node_id, 'name'].values[0]} ({node_id})"
+                )
+            else:
+                queue.extend(self.get_children(node_id))
+
+        return categories_list
 
     def get_leaf_nodes(self, root_id: str) -> List[str]:
         """

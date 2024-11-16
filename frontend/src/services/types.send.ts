@@ -10,6 +10,7 @@ export enum ESendEvent {
 
 type TFileUploadInitPayload = {
   numberOfFiles: number
+  rootDir: string
 }
 
 type TFileUploadPayload = {
@@ -22,7 +23,7 @@ type TModeSelectedPayload = {
 }
 
 type TPredictionApprovalPayload = {
-  fileName: string
+  productName: string
   class: string
 }
 
@@ -41,7 +42,8 @@ export type TSendEvent =
     }
   | {
       type: ESendEvent.INIT_PREDICTIONS
-    } | {
+    }
+  | {
       type: ESendEvent.PREDICTION_APPROVAL
       data: TPredictionApprovalPayload
-}
+    }
