@@ -45,7 +45,9 @@ func HandlePrediction(ctx *types.ConnectionContext) {
 
 		case types.SemiAutomatic:
 			mostProbableClassWeight := finalPrediction.PredictedClasses[0].Weight
-			if mostProbableClassWeight > 0.2 {
+			secondMostProbableClassWeight := finalPrediction.PredictedClasses[1].Weight
+			difference := mostProbableClassWeight - secondMostProbableClassWeight
+			if difference > 0.2 {
 				mostProbableClass := finalPrediction.PredictedClasses[0].Class
 				ctx.ApprovedFiles = append(ctx.ApprovedFiles, types.ApprovedFile{ProductName: finalPrediction.ProductName, Class: mostProbableClass})
 				websocketresponder.SendPredictionProgress(ctx)
