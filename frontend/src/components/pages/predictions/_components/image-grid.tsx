@@ -1,3 +1,4 @@
+import { serverUrl } from 'app/services/utils';
 import Image from 'next/image'
 
 export const ImageGrid = ({ filePaths }: { filePaths: string[] }) => {
@@ -25,7 +26,7 @@ export const ImageGrid = ({ filePaths }: { filePaths: string[] }) => {
           className={`relative overflow-hidden mx-auto`}
         >
           <Image
-            src={`http://localhost:4200/uploads/${path}`}
+            src={`${serverUrl}/uploads/${path}`}
             alt="File to manually classify"
             width={getImageSize()}
             height={getImageSize()}
