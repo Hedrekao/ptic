@@ -2,11 +2,11 @@ package websockethandler
 
 import (
 	types "backend/websocket-handler/types"
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 	"github.com/gorilla/websocket"
@@ -33,41 +33,25 @@ type WebSocketMessage struct {
 	Data interface{} `json:"data"`
 }
 
-func HandleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println("WebSocket upgrade error:", err)
-		return
-	}
-
-	ctx := &types.ConnectionContext{
-		Conn:           conn,
-		BlobClient:     nil,
-		Id:             r.RemoteAddr, // Use RemoteAddr for ID, or generate a unique one
-		FilesToPredict: make(map[string][]string),
-	}
-
-	// If environment is Azure, create a new Blob client
-	if os.Getenv("ENV") == "AZURE" {
-		blobConnectionString, ok := os.LookupEnv("BLOB_STORAGE_CONNECTION_STRING")
-
-		if !ok {
-			log.Println("Error getting blob storage connection string:", err)
-			return
-		}
-
-		blobClient, err := azblob.NewClientFromConnectionString(blobConnectionString, nil)
-
+func HandleWebSocketConnection(blobClient *azblob.Client) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			log.Println("Error creating blob client:", err)
+			log.Println("WebSocket upgrade error:", err)
 			return
 		}
 
-		ctx.BlobClient = blobClient
-	}
+		ctx := &types.ConnectionContext{
+			Ctx:            context.Background(),
+			Conn:           conn,
+			BlobClient:     blobClient,
+			Id:             r.RemoteAddr, // Use RemoteAddr for ID, or generate a unique one
+			FilesToPredict: make(map[string][]string),
+		}
 
-	fmt.Println("New WebSocket connection established:", ctx.Id)
-	go handleConnection(ctx)
+		fmt.Println("New WebSocket connection established:", ctx.Id)
+		go handleConnection(ctx)
+	}
 }
 
 func handleConnection(ctx *types.ConnectionContext) {
