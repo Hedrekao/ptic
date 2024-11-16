@@ -106,3 +106,7 @@ def evaluate_model():
         "top5": f"{top5_acc:.2f}",
         "category_acc": category_acc,
     }
+
+
+if __name__ == "__main__":
+    print(evaluate_model())
