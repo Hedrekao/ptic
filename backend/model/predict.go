@@ -60,6 +60,8 @@ func MapToPredictionFile(productName string, predictionResponse map[string]float
 		return predictedClasses[i].Weight > predictedClasses[j].Weight
 	})
 
+	predictedClasses = predictedClasses[:5]
+
 	// Create and return the PredictionFile
 	return types.PredictionFile{
 		ProductName:      productName,
