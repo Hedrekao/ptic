@@ -14,7 +14,6 @@ venv
 /ml/data
 /ml/models_registry
 wandb
-**.env
 
 
 # Mac crap
