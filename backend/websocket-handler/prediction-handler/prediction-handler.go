@@ -17,6 +17,7 @@ func HandlePrediction(ctx *types.ConnectionContext) {
 			fmt.Println("Prediction:", prediction)
 			if err != nil {
 				fmt.Println("Error predicting file:", err)
+				return
 			}
 			for class, weight := range prediction.Predictions {
 				predictions[class] += weight
