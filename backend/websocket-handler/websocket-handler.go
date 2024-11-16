@@ -33,7 +33,7 @@ type WebSocketMessage struct {
 	Data interface{} `json:"data"`
 }
 
-func HandleWebSocketConnection(blobClient *azblob.Client) func(w http.ResponseWriter, r *http.Request) {
+func HandleWebSocketConnection(blobClient *azblob.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	uploadshandler "backend/uploads-handler"
 	websockethandler "backend/websocket-handler"
 	"log"
 	"net/http"
@@ -33,10 +34,9 @@ func main() {
 	}
 
 	log.Println("Server starting...")
-	http.HandleFunc("/ws", websockethandler.HandleWebSocketConnection(blobClient))
 
-	fs := http.FileServer(http.Dir("./uploads"))
-	http.Handle("/uploads/", http.StripPrefix("/uploads", fs))
+	http.HandleFunc("/ws", websockethandler.HandleWebSocketConnection(blobClient))
+	http.HandleFunc("/uploads/", uploadshandler.HandleUploads(blobClient))
 
 	err = http.ListenAndServe(":4200", nil)
 	if err != nil {
