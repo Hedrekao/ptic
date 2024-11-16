@@ -3,7 +3,6 @@ package uploadhandler
 import (
 	"backend/utils"
 	"backend/websocket-handler/types"
-	"context"
 	"encoding/base64"
 	"fmt"
 	"os"
@@ -25,8 +24,7 @@ func HandleFileUpload(ctx *types.ConnectionContext, data types.FileUploadData) e
 		blobClient := ctx.BlobClient
 		containerName := "images"
 
-		// TODO: change the context to ctx ones we make it as go context
-		blobClient.UploadBuffer(context.TODO(), containerName, data.FileName, imageData, nil)
+		blobClient.UploadBuffer(ctx.Ctx, containerName, data.FileName, imageData, nil)
 
 	} else {
 		// Extract the directory from the file name
