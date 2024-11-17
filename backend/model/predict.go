@@ -10,9 +10,7 @@ import (
 	"sort"
 )
 
-const MODEL_URL = "http://localhost:8000/predict"
-
-func Predict(filePath string, ctx *types.ConnectionContext) (PredictionResponse, error) {
+func Predict(filePath string, predictionServiceUrl string, ctx *types.ConnectionContext) (PredictionResponse, error) {
 	requestBody := PredictBody{
 		FilePath: filePath,
 	}
@@ -22,7 +20,7 @@ func Predict(filePath string, ctx *types.ConnectionContext) (PredictionResponse,
 	}
 
 	// Send POST request with the JSON data
-	res, err := http.Post(MODEL_URL, "application/json", bytes.NewBuffer(jsonData))
+	res, err := http.Post(predictionServiceUrl, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return PredictionResponse{}, fmt.Errorf("failed to make POST request: %w", err)
 	}

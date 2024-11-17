@@ -6,14 +6,23 @@ import (
 	websocketresponder "backend/websocket-responder"
 	"fmt"
 	"math"
+	"os"
 )
 
 func HandlePrediction(ctx *types.ConnectionContext) {
+
+	var predictionServiceUrl string
+	if url, ok := os.LookupEnv("PREDICTION_SERVICE_URL"); ok {
+		predictionServiceUrl = url + "/predict"
+	} else {
+		predictionServiceUrl = "http://localhost:8000/predict"
+	}
+
 	for productName, paths := range ctx.FilesToPredict {
 
 		predictions := make(map[string]float64)
 		for _, path := range paths {
-			prediction, err := model.Predict(path, ctx)
+			prediction, err := model.Predict(path, predictionServiceUrl, ctx)
 			fmt.Println("Prediction:", prediction)
 			if err != nil {
 				fmt.Println("Error predicting file:", err)
