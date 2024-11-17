@@ -8,3 +8,8 @@ ml/models_registry/
 /backend/uploads
 **.env
 **README.md
+
+wandb/
+imagenet-scraper/
+infra/
+notes/
