@@ -11,10 +11,10 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'icaam-backend.swedencentral.azurecontainer.io',
-        port: '',
         pathname: '/uploads/**',
       },
     ],
+    unoptimized: true,
   },
 }
 
