@@ -1,0 +1,10 @@
+ml/**/*.pth
+notebooks/
+ml/data/processed_images/
+ml/data/raw_images/
+ml/models_registry/
+**node_modules/
+/venv/
+/backend/uploads
+**.env
+**README.md
