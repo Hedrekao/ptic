@@ -2,11 +2,13 @@ package websockethandler
 
 import (
 	types "backend/websocket-handler/types"
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
 	"github.com/gorilla/websocket"
 )
 
@@ -31,21 +33,25 @@ type WebSocketMessage struct {
 	Data interface{} `json:"data"`
 }
 
-func HandleWebSocketConnection(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println("WebSocket upgrade error:", err)
-		return
-	}
+func HandleWebSocketConnection(blobClient *azblob.Client) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			log.Println("WebSocket upgrade error:", err)
+			return
+		}
 
-	ctx := &types.ConnectionContext{
-		Conn:           conn,
-		Id:             r.RemoteAddr, // Use RemoteAddr for ID, or generate a unique one
-		FilesToPredict: make(map[string][]string),
-	}
+		ctx := &types.ConnectionContext{
+			Ctx:            context.Background(),
+			Conn:           conn,
+			BlobClient:     blobClient,
+			Id:             r.RemoteAddr, // Use RemoteAddr for ID, or generate a unique one
+			FilesToPredict: make(map[string][]string),
+		}
 
-	fmt.Println("New WebSocket connection established:", ctx.Id)
-	go handleConnection(ctx)
+		fmt.Println("New WebSocket connection established:", ctx.Id)
+		go handleConnection(ctx)
+	}
 }
 
 func handleConnection(ctx *types.ConnectionContext) {

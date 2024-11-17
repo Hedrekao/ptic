@@ -45,8 +45,9 @@ func handleFileUpload(ctx *types.ConnectionContext, data interface{}) {
 		FileData: dataMap["fileData"].(string),
 	}
 
-	if err := uploadhandler.HandleFileUpload(fileUploadData); err != nil {
+	if err := uploadhandler.HandleFileUpload(ctx, fileUploadData); err != nil {
 		log.Println("Error handling file upload:", err)
+		return
 	}
 
 	log.Println("File uploaded:", fileUploadData.FileName)

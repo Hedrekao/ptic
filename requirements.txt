@@ -11,3 +11,5 @@ fastapi
 uvicorn
 click
 graphviz
+python-dotenv
+azure-storage-blob

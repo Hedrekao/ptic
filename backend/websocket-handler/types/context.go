@@ -1,9 +1,16 @@
 package types
 
-import "github.com/gorilla/websocket"
+import (
+	"context"
+
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
+	"github.com/gorilla/websocket"
+)
 
 type ConnectionContext struct {
+	Ctx                    context.Context
 	Conn                   *websocket.Conn
+	BlobClient             *azblob.Client
 	Id                     string
 	SelectedMode           EMode
 	RootDir                string
