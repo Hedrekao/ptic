@@ -22,3 +22,8 @@ wandb
 **/.DS_Store
 
 **/uploads
+
+# Infra related stuff
+**.terraform
+**terraform.**
+**ssl**
