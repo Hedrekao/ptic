@@ -6,7 +6,7 @@ export const socket = new WebSocket(WS_URL)
 
 socket.onopen = () => console.log('Connected')
 socket.onerror = (error) => console.error('WebSocket error:', error)
-socket.onclose = (event) => console.log('Connection closed:', event.code, event.reason)
+socket.onclose = (event) => console.log('Connection closed:', event)
 
 const REGISTERED_EVENTS: Record<ERegisterEvent, (payload: TRegisterEvent['data']) => void> = {
   [ERegisterEvent.UPLOAD_PROGRESS]: () => {},
