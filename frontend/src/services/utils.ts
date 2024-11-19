@@ -1,7 +1,8 @@
 export const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:4200'
 
-const host = serverUrl.split('//')[1]
-export const WS_URL = `ws://${host}/ws`
+const [protocol, host] = serverUrl.split('://')
+
+export const WS_URL = `${protocol == 'https' ? 'wss' : 'ws'}://${host}/ws`
 
 export const arrayBufferToBase64 = (buffer: ArrayBufferLike) => {
   let binary = ''
@@ -12,4 +13,3 @@ export const arrayBufferToBase64 = (buffer: ArrayBufferLike) => {
   }
   return window.btoa(binary) // Encode binary string as Base64
 }
-
