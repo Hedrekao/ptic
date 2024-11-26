@@ -8,8 +8,6 @@ import { FileInput } from 'lucide-react'
 export const UploadArea = () => {
   const { onUpload, progress } = useUploadContext()
 
-
-  console.log(progress)
   return (
     <div className="flex flex-col gap-2 w-full">
       <div className={`w-full border border-dashed border-slate-400 rounded-lg h-60 flex flex-col justify-center items-center gap-3`}>
