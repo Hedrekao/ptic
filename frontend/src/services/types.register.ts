@@ -8,6 +8,7 @@ export enum ERegisterEvent {
 
 export type TUploadProgressPayload = {
   progress: number
+  uploadId: number
 }
 
 export type TModeSelectedPayload = {

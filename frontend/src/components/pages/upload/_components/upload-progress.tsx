@@ -1,11 +1,11 @@
 import React from "react";
-import { Folder } from "lucide-react";
+import { Folder, X } from "lucide-react";
 import { useUploadContext } from 'app/components/pages/upload/_components/upload-context'
 
 export const UploadProgress = () => {
-  const {dirName, progress} = useUploadContext()
+  const { dirName, progress, onUploadCancel } = useUploadContext()
 
-  if(!dirName) return null
+  if (!dirName) return null
 
   return (
     <div className="flex items-center justify-between p-3 bg-gray border border-gray-200 rounded-lg shadow-sm">
@@ -27,6 +27,9 @@ export const UploadProgress = () => {
             {progress.toFixed(0)}%
           </div>
         </div>
+        <button onClick={onUploadCancel}>
+          <X />
+        </button>
       </div>
     </div>
   );

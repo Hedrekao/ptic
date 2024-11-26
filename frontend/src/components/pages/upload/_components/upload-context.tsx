@@ -11,6 +11,7 @@ import {
 interface TUploadContext {
   dirName: string | null
   onUpload: (e: ChangeEvent<HTMLInputElement>) => void
+  onUploadCancel: () => void
   progress: number
 }
 
@@ -19,14 +20,15 @@ const UploadContext = React.createContext<TUploadContext>({} as TUploadContext)
 export const UploadContextProvider = (props: PropsWithChildren) => {
   const [progress, setProgress] = React.useState<number>(0)
   const [dirName, setDirName] = React.useState<string | null>(null)
+  const [uploadId, setUploadId] = React.useState<number>(Date.now())
 
   useEffect(() => {
     register(ERegisterEvent.UPLOAD_PROGRESS, (data: TRegisterEvent['data']) => {
       const uploadProgressData = data as TUploadProgressPayload
-      console.log(uploadProgressData.progress)
+      if (uploadId > uploadProgressData.uploadId) return
       setProgress(uploadProgressData.progress)
     })
-  }, [])
+  }, [uploadId])
 
   const onUpload = (data: ChangeEvent<HTMLInputElement>) => {
     const files = data.target.files
@@ -40,12 +42,14 @@ export const UploadContextProvider = (props: PropsWithChildren) => {
       type: ESendEvent.FILE_UPLOAD_INIT,
       data: {
         numberOfFiles: files.length,
-        rootDir: rootDir
+        rootDir: rootDir,
+        uploadId: uploadId
       }
     })
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
+    // Consider reading files one at the time to avoid memory issues
     for (const file of files) {
       const reader = new FileReader();
 
@@ -69,8 +73,20 @@ export const UploadContextProvider = (props: PropsWithChildren) => {
     }
   }
 
+  const onUploadCancel = () => {
+    setDirName(null)
+    setProgress(0)
+
+    register(ERegisterEvent.UPLOAD_PROGRESS, () => { })
+    send({
+      type: ESendEvent.CANCEL_UPLOAD
+    })
+
+    setUploadId(Date.now())
+  }
+
   return (
-    <UploadContext.Provider value={{ dirName, onUpload, progress }}>
+    <UploadContext.Provider value={{ dirName, onUpload, onUploadCancel, progress }}>
       {props.children}
     </UploadContext.Provider>
   )

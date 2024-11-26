@@ -6,17 +6,19 @@ import { useUploadContext } from 'app/components/pages/upload/_components/upload
 import { FileInput } from 'lucide-react'
 
 export const UploadArea = () => {
-  const {onUpload} = useUploadContext()
+  const { onUpload, progress } = useUploadContext()
 
 
+  console.log(progress)
   return (
     <div className="flex flex-col gap-2 w-full">
-      <div className = {`w-full border border-dashed border-slate-400 rounded-lg h-60 flex flex-col justify-center items-center gap-3`}>
-      <input
+      <div className={`w-full border border-dashed border-slate-400 rounded-lg h-60 flex flex-col justify-center items-center gap-3`}>
+        <input
           type="file"
           className="hidden"
+          disabled={progress !== 0}
           id="file-input"
-          {...{mozdirectory: "", webkitdirectory: ""}}
+          {...{ mozdirectory: "", webkitdirectory: "" }}
           onChange={(e) => onUpload(e)}
         />
         <label htmlFor="file-input">
@@ -34,11 +36,6 @@ export const UploadArea = () => {
           {' '}
           to choose files to upload
         </p>
-      </div>
-
-      <div className="w-full flex justify-between text-xs text-slate-700">
-        <p>Supported formats: JPEG</p>
-        <p>Maximum size: 25MB</p>
       </div>
 
       <UploadProgress />

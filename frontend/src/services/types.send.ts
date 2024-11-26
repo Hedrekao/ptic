@@ -6,11 +6,13 @@ export enum ESendEvent {
   MODE_SELECTED = 'select_mode',
   INIT_PREDICTIONS = 'init_predictions',
   PREDICTION_APPROVAL = 'prediction_approval',
+  CANCEL_UPLOAD = 'cancel_upload',
 }
 
 type TFileUploadInitPayload = {
   numberOfFiles: number
   rootDir: string
+  uploadId: number
 }
 
 type TFileUploadPayload = {
@@ -46,4 +48,7 @@ export type TSendEvent =
   | {
       type: ESendEvent.PREDICTION_APPROVAL
       data: TPredictionApprovalPayload
+    }
+  | {
+      type: ESendEvent.CANCEL_UPLOAD
     }
