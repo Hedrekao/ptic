@@ -17,6 +17,7 @@ type MessageType string
 const (
 	TypeUpload             MessageType = "file_upload"
 	TypeInitUpload         MessageType = "init_upload"
+	TypeCancelUpload       MessageType = "cancel_upload"
 	TypeSelectMode         MessageType = "select_mode"
 	TypeInitPredictions    MessageType = "init_predictions"
 	TypePredictionApproval MessageType = "prediction_approval"
@@ -42,11 +43,12 @@ func HandleWebSocketConnection(blobClient *azblob.Client) http.HandlerFunc {
 		}
 
 		ctx := &types.ConnectionContext{
-			Ctx:            context.Background(),
-			Conn:           conn,
-			BlobClient:     blobClient,
-			Id:             r.RemoteAddr, // Use RemoteAddr for ID, or generate a unique one
-			FilesToPredict: make(map[string][]string),
+			Ctx:               context.Background(),
+			Conn:              conn,
+			BlobClient:        blobClient,
+			Id:                r.RemoteAddr, // Use RemoteAddr for ID, or generate a unique one
+			FilesToPredict:    make(map[string][]string),
+			IsUploadCancelled: false,
 		}
 
 		fmt.Println("New WebSocket connection established:", ctx.Id)
@@ -79,6 +81,8 @@ func handleConnection(ctx *types.ConnectionContext) {
 		switch {
 		case msg.Type == TypeInitUpload:
 			handleInitUpload(ctx, msg.Data)
+		case msg.Type == TypeCancelUpload:
+			handleCancelUpload(ctx)
 		case msg.Type == TypeUpload:
 			handleFileUpload(ctx, msg.Data)
 		case msg.Type == TypeSelectMode:

@@ -31,8 +31,9 @@ func SendUploadProgress(ctx *types.ConnectionContext) {
 		return
 	}
 
-	response := map[string]float32{
+	response := map[string]interface{}{
 		"progress": float32(ctx.FilesUploaded) / float32(ctx.TotalFilesToBeUploaded) * 100,
+		"uploadId": ctx.UploadId,
 	}
 
 	sendWebSocketResponse(ctx.Conn, WebSocketResponse{Type: "upload_progress", Data: response})

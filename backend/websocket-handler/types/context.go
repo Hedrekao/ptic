@@ -15,6 +15,8 @@ type ConnectionContext struct {
 	SelectedMode           EMode
 	RootDir                string
 	FilesUploaded          int
+	IsUploadCancelled      bool
+	UploadId               float64
 	TotalFilesToBeUploaded int
 	FilesToPredict         map[string][]string
 	ApprovedFiles          []ApprovedFile   // Files with final prediction, either approved or automaically predicted

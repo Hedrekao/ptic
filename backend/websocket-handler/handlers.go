@@ -29,11 +29,32 @@ func handleInitUpload(ctx *types.ConnectionContext, data interface{}) {
 		return
 	}
 
+	uploadId, ok := dataMap["uploadId"].(float64)
+	if !ok {
+		log.Println("Error: uploadId is not an float64")
+		return
+	}
+
 	ctx.TotalFilesToBeUploaded = int(numberOfFiles)
 	ctx.RootDir = rootDir
+	ctx.IsUploadCancelled = false
+	ctx.FilesUploaded = 0
+	ctx.UploadId = uploadId
+}
+
+func handleCancelUpload(ctx *types.ConnectionContext) {
+	ctx.RootDir = ""
+	ctx.FilesUploaded = 0
+	ctx.FilesToPredict = make(map[string][]string)
+	ctx.IsUploadCancelled = true
 }
 
 func handleFileUpload(ctx *types.ConnectionContext, data interface{}) {
+	if ctx.IsUploadCancelled {
+		log.Println("Upload cancelled, ignoring file upload")
+		return
+	}
+
 	dataMap, ok := data.(map[string]interface{})
 	if !ok {
 		log.Println("Error: expected map for FileUploadData, but got a different type")
