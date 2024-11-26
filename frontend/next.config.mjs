@@ -14,6 +14,9 @@ const nextConfig = {
         pathname: '/uploads/**',
       },
     ],
+    // In real production workflow we would optimize images
+    // however we are missing true domain and have to use self-signed certificate
+    // nextjs does not support self-signed certificates
     unoptimized: true,
   },
 }
