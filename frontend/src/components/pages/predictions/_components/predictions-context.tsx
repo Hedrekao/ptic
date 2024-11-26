@@ -11,7 +11,7 @@ import { ESendEvent } from 'app/services/types.send'
 interface TPredictionsContext {
   approvedFiles: number
   allFiles: number
-  progress: number
+  progress: string
   approvalRequest: TPredictionApprovalRequestPayload['fileToApprove'] | null
   onApprove: (className: string) => void
   csvBlob: Blob | null
@@ -63,7 +63,7 @@ export const PredictionsContextProvider = (props: PropsWithChildren) => {
     <PredictionsContext.Provider value={{
       approvedFiles,
       allFiles,
-      progress: approvedFiles / allFiles * 100,
+      progress: (approvedFiles / allFiles * 100).toFixed(2),
       approvalRequest,
       onApprove,
       csvBlob
