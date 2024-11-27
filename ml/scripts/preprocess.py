@@ -18,11 +18,22 @@ def RGBA2RGB(img: torch.Tensor) -> torch.Tensor:
     return img
 
 
+def LA2RGB(img: torch.Tensor) -> torch.Tensor:
+    if img.shape[0] == 2:  # LA format
+        luminance, alpha = img[0], img[1]
+        # Convert to RGB by repeating the luminance channel
+        rgb = luminance.unsqueeze(0).repeat(3, 1, 1)
+        bg = torch.ones_like(rgb) * (1 - alpha)
+        return rgb * alpha + bg
+    return img
+
+
 def create_transform_pipeline(min_size: tuple):
 
     return v2.Compose([
         v2.ToImage(),
         v2.Resize(min_size),
+        v2.Lambda(LA2RGB),
         v2.RGB(),
         v2.Lambda(RGBA2RGB),
         v2.ToDtype(torch.float32, scale=True),
