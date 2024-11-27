@@ -8,13 +8,18 @@ venv
 # Editor-based HTTP Client requests
 /httpRequests/
 
-**/*images
+**/*/*images**
 **/__pycache__
 **.pth
 /ml/logs
 /ml/data
 /ml/models_registry
 wandb
+
+
+/images-scraper/**.csv
+/images-scraper/**.xlsx
+
 
 
 # Mac crap

@@ -25,7 +25,7 @@ export const UploadContextProvider = (props: PropsWithChildren) => {
   useEffect(() => {
     register(ERegisterEvent.UPLOAD_PROGRESS, (data: TRegisterEvent['data']) => {
       const uploadProgressData = data as TUploadProgressPayload
-      if (uploadId > uploadProgressData.uploadId) return
+      if (uploadId !== uploadProgressData.uploadId) return
       setProgress(uploadProgressData.progress)
     })
   }, [uploadId])
@@ -74,14 +74,14 @@ export const UploadContextProvider = (props: PropsWithChildren) => {
   }
 
   const onUploadCancel = () => {
-    setDirName(null)
-    setProgress(0)
 
     register(ERegisterEvent.UPLOAD_PROGRESS, () => { })
     send({
       type: ESendEvent.CANCEL_UPLOAD
     })
 
+    setDirName(null)
+    setProgress(0)
     setUploadId(Date.now())
   }
 
