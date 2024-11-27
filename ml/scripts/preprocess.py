@@ -64,14 +64,14 @@ def __preprocess_images(min_size: tuple, corrupted_files: set, file_below_min_si
             tensor = transform(Image.open(raw_path))
 
             assert tensor.shape == (
-                3, min_size[1], min_size[0]), f"All images should have the same shape. Got {tensor.shape}"
+                3, min_size[0], min_size[1]), f"All images should have the same shape. Got {tensor.shape}"
 
             torch.save(tensor, save_path)
 
-    with open(os.path.join(DATA_DIR, 'config.json'), 'w') as f:
-        json.dump({"min_size": min_size}, f)
+        print(f"Finished processing {class_name}")
 
-    print(f"Finished processing {class_name}")
+    with open(os.path.join(DATA_DIR, 'config.json'), 'w') as f:
+        json.dump({"min_size": [min_size[0], min_size[1]]}, f)
 
 
 if __name__ == "__main__":
