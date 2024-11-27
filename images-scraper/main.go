@@ -100,14 +100,24 @@ func sallingScraper() {
 		var categories []string
 		if strings.Contains(product_id, ";") {
 			product_ids := strings.Split(product_id, ";")
-			categories = make([]string, len(product_ids))
 
-			for i, product_id := range product_ids {
-				categories[i] = categoryMapping[product_id]
+			for _, split_product_id := range product_ids {
+				category, ok := categoryMapping[split_product_id]
+				if !ok {
+					continue
+				}
+				categories = append(categories, category)
 			}
 
 		} else {
-			categories = []string{categoryMapping[product_id]}
+			category, ok := categoryMapping[product_id]
+			if ok {
+				categories = []string{category}
+			}
+		}
+
+		if categories == nil || len(categories) == 0 {
+			continue
 		}
 
 		var folderPaths []string
@@ -119,7 +129,7 @@ func sallingScraper() {
 			folderPaths = append(folderPaths, folderPath)
 		}
 
-		go func(url, fileName string, atomicCounter *int64) {
+		go func(url, fileName string, folderPaths []string, atomicCounter *int64) {
 			defer wg.Done()
 			semaphore <- struct{}{}
 			defer func() {
@@ -128,7 +138,7 @@ func sallingScraper() {
 			ctx, cancel := context.WithTimeout(context.Background(), timeout)
 			defer cancel()
 			downloadImage(ctx, url, folderPaths, fileName, atomicCounter)
-		}(baseSallingURL+fmt.Sprintf("/%s", image_id), fmt.Sprintf("%s.jpg", image_id), &atomicCounter)
+		}(baseSallingURL+fmt.Sprintf("/%s", image_id), fmt.Sprintf("%s.jpg", image_id), folderPaths, &atomicCounter)
 
 	}
 
