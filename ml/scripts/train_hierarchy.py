@@ -60,21 +60,29 @@ def train_hierarchy():
 
     hierarchy = Hierarchy()
     queue = []
+    root_id = hierarchy.get_root_id()
+    queue.append(root_id)
 
     if len(model_files) == 0:
         print("Starting training from scratch")
-        root_id = hierarchy.get_root_id()
-        queue.append(root_id)
     else:
-        model_files.sort()
-        last_trained_node = model_files[-1]
-        parent = hierarchy.get_parent(last_trained_node)
-        if parent is None:
-            queue.append(last_trained_node)
-        else:
-            queue.append(parent)
+        not_trained_node = None
+        while len(queue) > 0:
+            node = queue.pop(0)
+            if node not in model_files:
+                not_trained_node = node
+                break
+            children = hierarchy.get_children(node)
+            queue.extend(children)
 
-        print("Resuming training from node ", queue[0])
+        if not_trained_node is None:
+            print("All nodes are already trained")
+            return
+        else:
+            start_node = hierarchy.get_parent(
+                not_trained_node) if not_trained_node != root_id else not_trained_node
+            queue = [start_node]
+            print("Resuming training from node: ", queue[0])
 
     # bfs traversal for training internal hierarchy nodes
     while len(queue) > 0:
