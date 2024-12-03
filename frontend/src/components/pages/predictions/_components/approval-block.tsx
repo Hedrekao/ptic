@@ -5,7 +5,6 @@ import { Label } from 'app/components/ui/label'
 import { Button } from 'app/components/ui/button'
 import { ImageGrid } from './image-grid'
 
-
 export const ApprovalBlock = () => {
   const { approvalRequest, onApprove } = usePredictions()
   const [selectedClass, setSelectedClass] = React.useState<string | null>(null)
@@ -18,6 +17,7 @@ export const ApprovalBlock = () => {
     if (!selectedClass) return
 
     onApprove(selectedClass)
+    setSelectedClass(null)
   }
 
   if (!approvalRequest) return null
@@ -27,14 +27,18 @@ export const ApprovalBlock = () => {
       <ImageGrid filePaths={approvalRequest.filePaths} />
       <div className={'flex flex-col gap-2'}>
         <RadioGroup onValueChange={onSelectOption}>
-          {approvalRequest.predictedClasses.map(predictedClass => (
+          {approvalRequest.predictedClasses.map((predictedClass) => (
             <div className="flex items-center space-x-2" key={predictedClass.class}>
               <RadioGroupItem value={predictedClass.class} id={predictedClass.class} />
-              <Label htmlFor={predictedClass.class}>{predictedClass.class} ({(predictedClass.weight * 100).toFixed(3)}%)</Label>
+              <Label htmlFor={predictedClass.class}>
+                {predictedClass.class} ({(predictedClass.weight * 100).toFixed(3)}%)
+              </Label>
             </div>
           ))}
         </RadioGroup>
-        <Button onClick={approve} className={'bg-blue-500 text-white'}>Select</Button>
+        <Button onClick={approve} className={'bg-blue-500 text-white'}>
+          Select
+        </Button>
       </div>
     </div>
   )
