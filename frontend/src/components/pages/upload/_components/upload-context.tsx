@@ -53,16 +53,13 @@ export const UploadContextProvider = (props: PropsWithChildren) => {
     send({
       type: ESendEvent.FILE_UPLOAD_INIT,
       data: {
-        numberOfFiles: files.length,
+        numberOfFiles: filteredFiles.length,
         rootDir: rootDir,
         uploadId: uploadId
       }
     })
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    // Consider reading files one at the time to avoid memory issues
-    for (const file of files) {
+    for (const file of filteredFiles) {
       const reader = new FileReader();
 
       reader.onload = function(e) {
