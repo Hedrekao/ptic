@@ -35,7 +35,19 @@ export const UploadContextProvider = (props: PropsWithChildren) => {
 
     if (!files || files.length === 0) return
 
-    const rootDir = files[0].webkitRelativePath.split('/')[0]
+    // filter files based on extension
+    const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg']
+
+    const filteredFiles = Array.from(files).filter((file) => {
+      const extension = file.name.split('.').pop()
+      return extension && allowedExtensions.includes(extension)
+    })
+
+    if (filteredFiles.length === 0) {
+      return
+    }
+
+    const rootDir = filteredFiles[0].webkitRelativePath.split('/')[0]
     setDirName(rootDir)
 
     send({
