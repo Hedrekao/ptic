@@ -9,6 +9,12 @@ export const ApprovalBlock = () => {
   const { approvalRequest, onApprove } = usePredictions()
   const [selectedClass, setSelectedClass] = React.useState<string | null>(null)
 
+  React.useEffect(() => {
+    if (approvalRequest?.predictedClasses.length) {
+      setSelectedClass(approvalRequest.predictedClasses[0].class)
+    }
+  }, [approvalRequest])
+
   const onSelectOption = (value: string) => {
     setSelectedClass(value)
   }
@@ -26,7 +32,7 @@ export const ApprovalBlock = () => {
     <div className={'w-full flex gap-4 items-center justify-around'}>
       <ImageGrid filePaths={approvalRequest.filePaths} />
       <div className={'flex flex-col gap-2'}>
-        <RadioGroup onValueChange={onSelectOption}>
+        <RadioGroup onValueChange={onSelectOption} value={selectedClass || ''}>
           {approvalRequest.predictedClasses.map((predictedClass) => (
             <div className="flex items-center space-x-2" key={predictedClass.class}>
               <RadioGroupItem value={predictedClass.class} id={predictedClass.class} />
