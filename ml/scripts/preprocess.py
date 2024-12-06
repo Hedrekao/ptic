@@ -72,7 +72,11 @@ def __preprocess_images(min_size: tuple, corrupted_files: set, file_below_min_si
             img_name = img_name.split(".")[0] + ".pt"
             save_path = os.path.join(base_save_path, img_name)
 
-            tensor = transform(Image.open(raw_path))
+            try:
+                tensor = transform(Image.open(raw_path))
+            except OSError:
+                print(f"Error processing {raw_path}")
+                continue
 
             assert tensor.shape == (
                 3, min_size[0], min_size[1]), f"All images should have the same shape. Got {tensor.shape}"
