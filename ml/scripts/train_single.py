@@ -262,12 +262,12 @@ def __validate(model: nn.Module, loader: PrefetchLoader) -> Tuple[float, float, 
     return epoch_loss, epoch_acc, balanced_accuracy, class_accuracies
 
 
-def train_singular_model(hierarchy: Hierarchy, node_id: str, train_config: TrainConfig, device_type: str) -> None:
+def train_singular_model(hierarchy: Hierarchy, node_id: str, train_config: TrainConfig, device_type: str, project_name: str) -> None:
 
     # init wandb run
     run_name = f"node_{node_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     wandb.init(
-        project="bachelor-resnet-icaam",
+        project=f"bachelor-resnet-{project_name}",
         name=run_name,
         config={
             "architecture": "HierarchyNodeModel",

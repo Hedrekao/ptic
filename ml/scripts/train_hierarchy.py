@@ -1,9 +1,12 @@
-import os
-import torch
 import json
-import numpy as np
-
+import os
+import sys
 from glob import glob
+from typing import Optional
+
+import numpy as np
+import torch
+
 from ml.scripts.train_single import TrainConfig, train_singular_model
 from ml.utils.constants import MODELS_REGISTRY_PATH
 from ml.utils.hierarchy import Hierarchy
@@ -29,7 +32,7 @@ class ModelMetadata:
             json.dump(result, f)
 
 
-def train_hierarchy():
+def train_hierarchy(project_name: str, hierarchy_file_path: Optional[str] = None):
     device_type = "cpu"
 
     if torch.cuda.is_available():
@@ -58,7 +61,7 @@ def train_hierarchy():
     model_files = [os.path.split(path)[1].split('.')[0] for path in glob(
         os.path.join(MODELS_REGISTRY_PATH, "*.pth"))]
 
-    hierarchy = Hierarchy()
+    hierarchy = Hierarchy(hierarchy_file_path)
     queue = []
     root_id = hierarchy.get_root_id()
     queue.append(root_id)
@@ -101,7 +104,8 @@ def train_hierarchy():
         if len(children) == 1:
             metadata.is_single_label = True
         else:
-            train_singular_model(hierarchy, node_id, train_config, device_type)
+            train_singular_model(hierarchy, node_id,
+                                 train_config, device_type, project_name)
 
         metadata.save()
         print(f"Finished training node {node_id}")
@@ -115,4 +119,16 @@ def train_hierarchy():
     print("Finished training hierarchy")
 
 
-train_hierarchy()
+if __name__ == "__main__":
+
+    if len(sys.argv) < 2:
+        print(
+            "Usage: python train_hierarchy.py <project_name> [hierarchy_file_path]")
+        exit(1)
+
+    project_name = sys.argv[1]
+    hierarchy_file_path = None
+    if len(sys.argv) == 3:
+        hierarchy_file_path = sys.argv[2]
+
+    train_hierarchy(project_name, hierarchy_file_path)
