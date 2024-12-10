@@ -304,8 +304,8 @@ def create_images_dataloader(
         dataset,
         batch_size=batch_size,
         shuffle=(split == 'train'),
+        drop_last=(split == 'train'),
         num_workers=num_workers,
-        drop_last=True,
     )
 
     # Wrap with prefetching
