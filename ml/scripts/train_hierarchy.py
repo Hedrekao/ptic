@@ -40,6 +40,7 @@ def train_hierarchy(project_name: str, hierarchy_file_path: Optional[str] = None
     elif torch.backends.mps.is_available():
         device_type = "mps"
 
+    # TODO: read it from json file
     train_config = TrainConfig(
         epochs=150,
         batch_size=16,
@@ -50,7 +51,7 @@ def train_hierarchy(project_name: str, hierarchy_file_path: Optional[str] = None
         weight_decay=0.1,
         grad_clip_value=0.4,
         label_smoothing=0.1,
-        early_stopping_patience=30,
+        early_stopping_patience=45,
         optimizer="adamw",
     )
 
