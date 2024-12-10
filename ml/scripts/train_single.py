@@ -392,7 +392,11 @@ def train_singular_model(hierarchy: Hierarchy, node_id: str, train_config: Train
                 MODELS_REGISTRY_PATH, f'{node_id}.pth'))
             logger.info(f'Saved new best model with val_loss: {val_loss:.4f}')
 
-            wandb.save(f'{node_id}.pth')
+            artifact = wandb.Artifact(f"model_{node_id}", type="model")
+            artifact.add_file(os.path.join(
+                MODELS_REGISTRY_PATH, f'{node_id}.pth'))
+            wandb.log_artifact(artifact)
+
             wandb.run.summary["best_val_loss"] = best_val_loss
             wandb.run.summary["best_val_acc"] = val_acc
         else:
