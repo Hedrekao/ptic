@@ -33,7 +33,7 @@ def LA2RGB(img: torch.Tensor) -> torch.Tensor:
     return img
 
 
-def create_transform_pipeline(min_size: tuple):
+def create_transform_pipeline(min_size: tuple, dataset_mean: list, dataset_std: list):
 
     return v2.Compose([
         v2.ToImage(),
@@ -43,8 +43,8 @@ def create_transform_pipeline(min_size: tuple):
         v2.Lambda(RGBA2RGB),
         v2.ToDtype(torch.float32, scale=True),
         v2.Normalize(
-            mean=[0.4529, 0.4129, 0.3755],
-            std=[0.2829, 0.2726, 0.2763]
+            mean=dataset_mean,
+            std=dataset_std
         )
     ])
 
@@ -59,7 +59,7 @@ def preprocess_images(min_size_threshold: int, n_products_threshold: int = 5,  h
     print_statistics(statistics)
 
     __preprocess_images(
-        statistics["min_size"], statistics["corrupted_files"], statistics["files_below_min_size"])
+        statistics["min_size"], statistics["corrupted_files"], statistics["files_below_min_size"], statistics["dataset_mean"], statistics["dataset_std"])
 
     __remove_unusable_categories(n_products_threshold)
 
@@ -67,9 +67,9 @@ def preprocess_images(min_size_threshold: int, n_products_threshold: int = 5,  h
         __preprocess_hierarchy(hierarchy_path)
 
 
-def __preprocess_images(min_size: tuple, corrupted_files: set, file_below_min_size: set):
+def __preprocess_images(min_size: tuple, corrupted_files: set, file_below_min_size: set, dataset_mean: list, dataset_std: list):
 
-    transform = create_transform_pipeline(min_size)
+    transform = create_transform_pipeline(min_size, dataset_mean, dataset_std)
 
     for class_name in os.listdir(RAW_IMAGES_PATH):
         base_save_path = os.path.join(PROCESSED_IMAGES_PATH, class_name)
@@ -98,7 +98,10 @@ def __preprocess_images(min_size: tuple, corrupted_files: set, file_below_min_si
         print(f"Finished processing {class_name}")
 
     with open(os.path.join(DATA_DIR, 'config.json'), 'w') as f:
-        json.dump({"min_size": [min_size[0], min_size[1]]}, f)
+        json.dump({
+            "min_size": [min_size[0], min_size[1]],
+            "mean": dataset_mean,
+            "std": dataset_std}, f)
 
 
 # removing categories with less than 5 images

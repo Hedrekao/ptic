@@ -22,7 +22,9 @@ class HierarchyModel:
             open(os.path.join(DATA_DIR, "config.json"), "r"))
 
         self.transform_pipeline = create_transform_pipeline(
-            (self.config["min_size"][0], self.config["min_size"][1])
+            (self.config["min_size"][0], self.config["min_size"][1]),
+            self.config["mean"],
+            self.config["std"]
         )
 
         self.device = torch.device(
