@@ -59,7 +59,7 @@ def train_hierarchy(project_name: str, hierarchy_file_path: Optional[str] = None
     os.makedirs(MODELS_REGISTRY_PATH, exist_ok=True)
 
     # decide whether we should start training from scratch or resume training
-    model_files = [os.path.split(path)[1].split('.')[0] for path in glob(
+    model_files = [os.path.splitext(os.path.split(path)[-1])[0] for path in glob(
         os.path.join(MODELS_REGISTRY_PATH, "*.pth"))]
 
     hierarchy = Hierarchy(hierarchy_file_path)

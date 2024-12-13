@@ -37,7 +37,7 @@ class HierarchyModel:
         metadata_files = glob(os.path.join(MODELS_REGISTRY_PATH, "*.json"))
 
         for file in metadata_files:
-            file_name = os.path.split(file)[-1].split(".")[0]
+            file_name = os.path.splitext(os.path.split(file)[-1])[0]
 
             with open(file, "r") as f:
                 model_metadata = json.load(f)
@@ -49,7 +49,7 @@ class HierarchyModel:
         self.models = {}
 
         for file in model_files:
-            file_name = os.path.split(file)[-1].split(".")[0]
+            file_name = os.path.splitext(os.path.split(file)[-1])[0]
             model_metadata = self.metadata[file_name]
             n_classes = model_metadata["n_classes"]
 
