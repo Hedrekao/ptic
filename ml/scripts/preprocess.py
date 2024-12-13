@@ -104,8 +104,10 @@ def __preprocess_images(min_size: tuple, corrupted_files: set, file_below_min_si
             "std": dataset_std}, f)
 
 
-# removing categories with less than 5 images
-# it is not possible to split them into 64%, 16%, 20% splits
+# removing categories with less than n images
+# the minimal number of images is dependent on the dataset split
+# in case we have 70, 15, 15 split we should have at least 7 images per category
+# so that at least one image from category will be present in each split
 def __remove_unusable_categories(n_images_threshold: int = 5):
     count = 0
     categories = os.listdir(PROCESSED_IMAGES_PATH)
