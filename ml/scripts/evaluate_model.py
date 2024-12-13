@@ -1,4 +1,6 @@
+from typing import Optional
 import torch
+import sys
 from ml.models import HierarchyModel
 from ml.utils.data_loader import create_images_dataloader
 from ml.utils.hierarchy import Hierarchy
@@ -6,8 +8,8 @@ from tqdm.auto import tqdm
 
 
 @torch.no_grad()
-def evaluate_model():
-    hierarchy = Hierarchy()
+def evaluate_model(hierarchy_file_path: Optional[str] = None):
+    hierarchy = Hierarchy(hierarchy_file_path)
 
     device = torch.device(
         "cuda" if torch.cuda.is_available() else "cpu"
@@ -42,8 +44,7 @@ def evaluate_model():
     category_accuracy = {cat: {"top1": 0, "top3": 0,
                                "top5": 0, "count": 0} for cat in categories}
 
-    n_samples = len(dataloader) * 16
-
+    n_samples = len(dataloader.loader.dataset)
     progress_bar = tqdm(dataloader, desc="Evaluating model")
 
     for batch in progress_bar:
@@ -51,7 +52,8 @@ def evaluate_model():
 
         leaf_probs = model.predict(tensors)
 
-        _, top5_indices = torch.topk(torch.tensor(leaf_probs), 5, dim=1)
+        leaf_probs = torch.tensor(leaf_probs, device=device)
+        _, top5_indices = torch.topk(leaf_probs, 5, dim=1)
 
         top1_acc += (top5_indices[:, 0] == labels).sum().item()
         top3_acc += (top5_indices[:, :3] ==
@@ -109,4 +111,9 @@ def evaluate_model():
 
 
 if __name__ == "__main__":
-    print(evaluate_model())
+
+    hierarchy_file_path = None
+    if len(sys.argv) == 2:
+        hierarchy_file_path = sys.argv[1]
+
+    print(evaluate_model(hierarchy_file_path))
