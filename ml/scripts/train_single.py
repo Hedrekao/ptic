@@ -1,4 +1,6 @@
 from collections import defaultdict
+import json
+import sys
 import logging
 import os
 from dataclasses import dataclass
@@ -12,7 +14,7 @@ import wandb
 from tqdm.auto import tqdm
 
 from ml.models.hierarchy_node_model import HierarchyNodeModel
-from ml.utils.constants import MODELS_REGISTRY_PATH
+from ml.utils.constants import MODELS_REGISTRY_PATH, CONFIGS_PATH
 from ml.utils.data_loader import PrefetchLoader, create_images_dataloader
 from ml.utils.hierarchy import Hierarchy
 from ml.utils.logger import create_file_logger
@@ -405,3 +407,33 @@ def train_singular_model(hierarchy: Hierarchy, node_id: str, train_config: Train
 
     logger.info('Training completed')
     wandb.finish()
+
+
+if __name__ == '__main__':
+
+    if len(sys.argv) < 3:
+        print(
+            "Usage: python train_single.py <node_id> <project_name> [hierarchy_file_path] [config_name]")
+        exit(1)
+
+    node_id = sys.argv[1]
+    project_name = sys.argv[2]
+
+    hierarchy_file_path = None
+    if len(sys.argv) == 4:
+        hierarchy_file_path = sys.argv[3]
+
+    config_name = 'default'
+    if len(sys.argv) == 5:
+        config_name = sys.argv[4]
+
+    hierarchy = Hierarchy(hierarchy_file_path)
+
+    config_json = json.load(
+        open(os.path.join(CONFIGS_PATH, f"{config_name}.json")))
+    train_config = TrainConfig(**config_json)
+
+    device_type = "cuda" if torch.cuda.is_available() else "cpu"
+
+    train_singular_model(hierarchy, node_id, train_config,
+                         device_type, project_name)

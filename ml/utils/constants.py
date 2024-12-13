@@ -8,4 +8,6 @@ HIERARCHY_FILE_PATH = "./ml/data/hierarchy.csv"
 MODELS_REGISTRY_PATH = "/content/drive/MyDrive/bach/models_registry" if os.getenv(
     "TRAINING_ENV", "LOCAL") == "GOOGLE_COLAB" else "./ml/models_registry"
 
+CONFIGS_PATH = "./ml/data/configs"
+
 LOG_DIR = "./ml/logs"

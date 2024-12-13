@@ -8,7 +8,7 @@ import numpy as np
 import torch
 
 from ml.scripts.train_single import TrainConfig, train_singular_model
-from ml.utils.constants import MODELS_REGISTRY_PATH
+from ml.utils.constants import CONFIGS_PATH, MODELS_REGISTRY_PATH
 from ml.utils.hierarchy import Hierarchy
 
 
@@ -40,21 +40,6 @@ def train_hierarchy(project_name: str, hierarchy_file_path: Optional[str] = None
     elif torch.backends.mps.is_available():
         device_type = "mps"
 
-    # TODO: read it from json file
-    train_config = TrainConfig(
-        epochs=150,
-        batch_size=16,
-        max_lr=1.2e-3,
-        div_factor=15.0,
-        final_div_factor=100.0,
-        pct_start=0.4,
-        weight_decay=0.1,
-        grad_clip_value=0.4,
-        label_smoothing=0.1,
-        early_stopping_patience=45,
-        optimizer="adamw",
-    )
-
     # prepare dir for saving models
     os.makedirs(MODELS_REGISTRY_PATH, exist_ok=True)
 
@@ -63,6 +48,7 @@ def train_hierarchy(project_name: str, hierarchy_file_path: Optional[str] = None
         os.path.join(MODELS_REGISTRY_PATH, "*.pth"))]
 
     hierarchy = Hierarchy(hierarchy_file_path)
+    available_configs = os.listdir(CONFIGS_PATH)
     queue = []
     root_id = hierarchy.get_root_id()
     queue.append(root_id)
@@ -105,6 +91,10 @@ def train_hierarchy(project_name: str, hierarchy_file_path: Optional[str] = None
         if len(children) == 1:
             metadata.is_single_label = True
         else:
+            config_name = node_id if f"{node_id}.json" in available_configs else "default"
+            config_json = json.load(
+                open(os.path.join(CONFIGS_PATH, f"{config_name}.json")))
+            train_config = TrainConfig(**config_json)
             train_singular_model(hierarchy, node_id,
                                  train_config, device_type, project_name)
 

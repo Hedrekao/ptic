@@ -1,0 +1,13 @@
+{
+  "epochs":150,
+  "batch_size":16,
+  "max_lr":1.2e-3,
+  "div_factor":15.0,
+  "final_div_factor":100.0,
+  "pct_start":0.4,
+  "weight_decay":0.1,
+  "grad_clip_value":0.4,
+  "label_smoothing":0.1,
+  "early_stopping_patience":45,
+  "optimizer":"adamw"
+}
