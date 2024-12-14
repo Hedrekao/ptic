@@ -40,7 +40,7 @@ const SettingsPage = () => {
       <div className="flex flex-col gap-4 mb-4">
         <SettingOption value="automatic" isSelected={selectedMode === 'automatic'} onChange={handleModeChange}>
           Automatic
-          <p className="text-sm font-normal text-gray-500 mt-1">Classify images automatically</p>
+          <p className="text-sm font-normal text-gray-500 mt-1">Classify products automatically</p>
         </SettingOption>
 
         <SettingOption
@@ -50,14 +50,14 @@ const SettingsPage = () => {
         >
           Semi-automatic
           <p className="text-sm font-normal text-gray-500 mt-1">
-            Classify images into 3 most likely categories and select the correct one
+            Allow the model to automatically classify products when confident, otherwise select the correct category from a list of 5 most likely categories
           </p>
         </SettingOption>
 
         <SettingOption value="manual" isSelected={selectedMode === 'manual'} onChange={handleModeChange}>
           Manual
           <p className="text-sm font-normal text-gray-500 mt-1">
-            Manually classify images into the correct category
+            Manually classify products into the correct category from a list of 5 most likely categories
           </p>
         </SettingOption>
       </div>

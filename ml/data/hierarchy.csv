@@ -1,4 +1,4 @@
-id,name,parent_id
+<ID>,<Name>,<Parent ID>
 n02729837,appliance,
 n03251766,"dryer, drier",n02729837
 n03483316,"hand blower, blow dryer, blow drier, hair dryer, hair drier",n03251766

@@ -98,22 +98,14 @@ func sallingScraper() {
 		wg.Add(1)
 
 		var categories []string
-		if strings.Contains(product_id, ";") {
-			product_ids := strings.Split(product_id, ";")
+		product_ids := strings.Split(product_id, ";")
 
-			for _, split_product_id := range product_ids {
-				category, ok := categoryMapping[split_product_id]
-				if !ok {
-					continue
-				}
-				categories = append(categories, category)
-			}
-
-		} else {
+		for _, product_id := range product_ids {
 			category, ok := categoryMapping[product_id]
-			if ok {
-				categories = []string{category}
+			if !ok {
+				continue
 			}
+			categories = append(categories, category)
 		}
 
 		if categories == nil || len(categories) == 0 {
@@ -172,10 +164,15 @@ func createCategoryMappping(product_csv string) map[string]string {
 			panic(err)
 		}
 
-		category := record[2]
-		product_id := record[3]
+		product_ids := record[2]
+		categories := record[3]
 
-		mapping[product_id] = category
+		for _, product_id := range strings.Split(product_ids, ";") {
+			for _, category := range strings.Split(categories, ";") {
+				mapping[product_id] = category
+			}
+		}
+
 	}
 
 	return mapping
@@ -185,7 +182,7 @@ func scrapeImages(category, baseURL, basePath string) {
 
 	// create a folder for the category
 	folderPath := path.Join(basePath, category)
-	timeout := 10 * time.Second
+	timeout := 15 * time.Second
 
 	if err := os.MkdirAll(folderPath, os.ModePerm); err != nil {
 		panic(err)
@@ -291,7 +288,7 @@ func downloadImage(ctx context.Context, url string, folderPath []string, fileNam
 
 	n_products := atomic.AddInt64(atomicCounter, 1)
 
-	if n_products%1000 == 0 {
+	if n_products%200 == 0 {
 		fmt.Printf("Downloaded %d images\n", n_products)
 	}
 

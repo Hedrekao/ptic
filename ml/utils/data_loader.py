@@ -299,13 +299,16 @@ def create_images_dataloader(
 
     dataset = ImageDataset(PROCESSED_IMAGES_PATH, categories, split)
 
+    should_drop_last = split == 'train' and len(dataset) > batch_size
+    batch_size = min(batch_size, len(dataset))
+
     # Create base DataLoader
     loader = DataLoader(
         dataset,
         batch_size=batch_size,
         shuffle=(split == 'train'),
+        drop_last=should_drop_last,
         num_workers=num_workers,
-        drop_last=True,
     )
 
     # Wrap with prefetching

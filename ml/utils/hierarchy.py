@@ -12,13 +12,13 @@ class Hierarchy():
         self.hierarchy: pd.DataFrame = pd.read_csv(path)
 
     def get_root_id(self):
-        root_node = self.hierarchy[self.hierarchy["parent_id"].isnull()]
+        root_node = self.hierarchy[self.hierarchy["<Parent ID>"].isnull()]
 
-        return root_node["id"].values[0]
+        return root_node["<ID>"].values[0]
 
     def get_parent(self, child_id: str):
-        parent = self.hierarchy.loc[self.hierarchy["id"]
-                                    == child_id, 'parent_id'].values
+        parent = self.hierarchy.loc[self.hierarchy["<ID>"]
+                                    == child_id, '<Parent ID>'].values
 
         if len(parent) == 0 or pd.isna(parent[0]):
             return None
@@ -27,8 +27,8 @@ class Hierarchy():
 
     def get_children(self, parent_id: str):
 
-        children = self.hierarchy.loc[self.hierarchy["parent_id"] == parent_id,
-                                      'id'].values
+        children = self.hierarchy.loc[self.hierarchy["<Parent ID>"] == parent_id,
+                                      '<ID>'].values
         children.sort()
 
         return children.tolist()
@@ -51,7 +51,7 @@ class Hierarchy():
 
             if self.is_leaf(node_id):
                 categories_list.append(
-                    f"{self.hierarchy.loc[self.hierarchy['id'] == node_id, 'name'].values[0]} ({node_id})"
+                    f"{self.hierarchy.loc[self.hierarchy['<ID>'] == node_id, '<Name>'].values[0]} ({node_id})"
                 )
             else:
                 queue.extend(self.get_children(node_id))
@@ -82,16 +82,20 @@ class Hierarchy():
         dot = graphviz.Digraph(comment='Hierarchy')
 
         # Configure graph attributes for better visualization
-        dot.attr(rankdir='TB')  # Top to Bottom layout
-        dot.attr('node', shape='box')
-        dot.attr('node', style='rounded')
-        dot.attr('graph', fontsize='12')
-        dot.attr('edge', color='#666666')
-
+        dot.attr(
+            rankdir='TB',
+            ranksep='0.4',
+            nodesep='0.2',
+            splines='ortho',
+            concentrate='true'
+        )
+        dot.attr('node', shape='box', style='rounded',
+                 width='0.5', height='0.3')
+        dot.attr('edge', color='#666666', penwidth='0.5')
         # Add nodes with formatted labels
         for _, row in self.hierarchy.iterrows():
             # Format label to show both ID and name
-            id = row['id']
+            id = row['<ID>']
             children = self.get_children(id)
 
             # color leaf nodes differently
@@ -105,10 +109,10 @@ class Hierarchy():
 
         # Add edges
         for _, row in self.hierarchy.iterrows():
-            if not pd.isna(row['parent_id']):
-                dot.edge(row['parent_id'], row['id'])
+            if not pd.isna(row['<Parent ID>']):
+                dot.edge(row['<Parent ID>'], row['<ID>'])
 
-        dot.render("hierarchy_tree", DATA_DIR, format='png', cleanup=True)
+        dot.render("hierarchy_tree", DATA_DIR, format='svg', cleanup=True)
 
     def create_matrix_mask(self):
 
