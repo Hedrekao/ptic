@@ -1,6 +1,6 @@
 Basically I believe that we can just do big convolution net with normalization. (batch norm, AdamW)
 
-Probably we can follow the mlac stuff Simon did, where we train model per class in hierarchy (also for the parent nodes), and then somehow on prediction we combine predictions from different models.
+Probably we can follow the approach (mlac inspired), where we train model per class in hierarchy (also for the parent nodes), and then somehow on prediction we combine predictions from different models.
 
 So the idea also mentioned in ImageNet paper to train binary classifier for each hierarchy, we take 90% of data of this hierarchy as positive examples and then take x images from other hierarchies (excluding child and parent hierarchies) as negative examples and the rest 10% is for testing. Then when we don't just predict for value for specific node, but rather for all the children and then the maximum of responses in subtree becomes the final score. This idea is called Tree-max classifier.
 
@@ -23,7 +23,6 @@ Also we could make it so that the more photos user uploads the more certain pred
 #### Flat vs hierarchical classificatation
 - it is not said that flat classification will give worse result
 - when doing hierarchical classification, we have the opportunity to only retrain the models that perform worse than rest of models, meaning we can focus on specific classes that model has issue with (not possible in flat scenario)
-
 
 ## Architecture approaches we should try out:
 - baseline CNN don't use hierarchy just leaf nodes

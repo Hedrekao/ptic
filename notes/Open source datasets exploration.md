@@ -17,7 +17,3 @@
 	- probably the most popular subset is called ILSVRC and it has 1000 categories
 
 To sum up this feels like the perfect dataset for us, at least to start with, we just need to find good subset of it as the entire thing is way too big.
-- Cifar100
-	-
-- Open Image Dataset by Google
-	-
