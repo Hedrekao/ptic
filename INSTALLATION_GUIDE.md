@@ -43,3 +43,10 @@
 Once all 3 services are running the system is fully functional and can be used.
 Remember that the system accepts only folders containing images (or nested folders containing images -> 1 level of nesting) during upload.
 The model files loaded into the service are trained on images of few kitchen appliances like espresso machines, washing machines, hair dryiers, toasters.
+
+### Bonus (script for getting images)
+Additionally a custom hand written image scraper written in go is attached as part of source code in folder images-scraper.
+Both datasets that were used in the project supplied links to images stored on CDN from which user has to download them manually.
+However, due to sheer amount of images (thousands of them) it was decided to write a script that can download them automatically in parallel.
+It uses goroutines to get multiple images in parallel, also using semaphore not to overrun network bandwidth.
+The script is included to showcase go capabilites when it comes to parallel programming, however it is not possible to use it without possesion of csv files containing product data.
